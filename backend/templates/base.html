@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="manifest" href="{% static 'css/manifest.json' %}">
 <head>
 <link rel="manifest" href="{% static 'css/manifest.json' %}">
     <meta charset="UTF-8">
@@ -5169,6 +5170,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {% block extra_js %}{% endblock %}
 
-</body>
+<script src="{% static 'js/splash.js' %}"></script>
 
+</body>
 </html>
