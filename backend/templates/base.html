@@ -3034,11 +3034,11 @@
 <a
     href="{% url 'vibespace:create' %}"
     class="nav-item nav-create-vibe"
-    aria-label="Create a Vibe"
-    title="Create a Vibe"
+    aria-label="Upload a Vibe"
+    title="Upload a Vibe"
 >
     <span class="nav-item-icon create-vibe-icon">+</span>
-    <span class="nav-item-label">Create a Vibe</span>
+    <span class="nav-item-label">Upload a Vibe</span>
 </a>
 
 
@@ -3556,7 +3556,10 @@
             </a>
 
 
-            <a href="#">
+            <a
+                href="{% url 'vibespace:explore_list' %}"
+                class="{% if request.resolver_match.namespace == 'vibespace' and request.resolver_match.url_name == 'explore_list' or request.resolver_match.namespace == 'vibespace' and request.resolver_match.url_name == 'explore' %}active{% endif %}"
+            >
 
                 <span>
                     ⌕
