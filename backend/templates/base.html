@@ -513,6 +513,8 @@
                 1px solid rgba(59,130,246,0.18);
         }
 
+        
+
 
         /* =====================================================
            NOTIFICATION BADGES
@@ -3028,20 +3030,18 @@
 
 
 
-                <a
-                    href="#"
-                    class="nav-item"
-                >
+                
+<a
+    href="{% url 'vibespace:create' %}"
+    class="nav-item nav-create-vibe"
+    aria-label="Create a Vibe"
+    title="Create a Vibe"
+>
+    <span class="nav-item-icon create-vibe-icon">+</span>
+    <span class="nav-item-label">Create a Vibe</span>
+</a>
 
-                    <span class="nav-item-icon">
-                        ★
-                    </span>
 
-                    <span class="nav-item-label">
-                        Leaderboard
-                    </span>
-
-                </a>
 
             </div>
 
@@ -3054,10 +3054,8 @@
 
 
                 <a
-                    
-href="{% url 'vibespace:explore' %}"
-
-                    class="nav-item"
+                    href="{% url 'vibespace:explore_list' %}"
+                    class="nav-item {% if '/vibespace/' in request.path and request.path != '/vibespace/create/' and request.path != '/vibespace/my/' %}active{% endif %}"
                 >
 
                     <span class="nav-item-icon">
