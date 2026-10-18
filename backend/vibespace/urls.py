@@ -5,8 +5,9 @@ from . import views
 app_name = "vibespace"
 
 urlpatterns = [
+    path("", views.explore_vibes, name="explore"),
     path("create/", views.create_vibe, name="create"),
-    path("explore/", views.explore_vibes, name="explore"),
+    path("explore/", views.explore_vibes, name="explore_list"),
     path("my/", views.my_vibes, name="my_vibes"),
 
     path("<int:pk>/like/", views.toggle_vibe_like, name="like"),
