@@ -2,11 +2,10 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-<link rel="manifest" href="{% static 'css/manifest.json' %}">
 <head>
-<link rel="manifest" href="{% static 'css/manifest.json' %}">
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="manifest" href="{% static 'css/manifest.json' %}">
 
     <meta
         name="viewport"
@@ -42,6 +41,24 @@
         })();
     </script>
 
+    <script>
+        (function () {
+            const splashKey = "bxb-splash-shown";
+
+            try {
+                if (sessionStorage.getItem(splashKey) === "true") {
+                    document.documentElement.classList.add("bxb-splash-visited");
+                    return;
+                }
+
+                sessionStorage.setItem(splashKey, "true");
+                document.documentElement.classList.add("bxb-splash-first-visit");
+            } catch (error) {
+                document.documentElement.classList.add("bxb-splash-visited");
+            }
+        })();
+    </script>
+
     <!-- Fonts -->
 
     <link
@@ -60,8 +77,11 @@
         rel="stylesheet"
     >
 
-
     <style>
+
+        html.bxb-splash-visited #bxb-splash {
+            display: none !important;
+        }
 
         /* =====================================================
            BITSXBYTES — GLOBAL DESIGN SYSTEM
@@ -138,7 +158,6 @@
 
             -webkit-font-smoothing: antialiased;
         }
-
 
         a {
             color: inherit;
@@ -2844,22 +2863,23 @@
 <body>
 
     
-<!-- BxB Splash Screen -->
-<div id="bxb-splash" class="bxb-splash" aria-label="Loading BitsXBytes">
-    <div class="splash-content">
-        <div class="splash-logo">BxB</div>
 
-        <h1>BitsXBytes</h1>
-        <p>Where campus meets code.</p>
 
-        <div class="splash-loader">
-            <span></span>
+    <div id="bxb-splash" aria-label="Loading BitsXBytes">
+        <div class="splash-content">
+            <div class="splash-logo">BxB</div>
+            <h1>BitsXBytes</h1>
+            <p>Connect to the your Campus Community.</p>
+
+            <div class="splash-loader">
+                <span></span>
+            </div>
+
+            <small>Connecting your community...</small>
         </div>
-
-        <small>Connecting your community...</small>
     </div>
-</div>
 
+    <!-- Existing BxB navbar and page content -->
 
 <div class="app-shell">
 
