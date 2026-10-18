@@ -2990,8 +2990,8 @@
 
 
                 <a
-                    href="#"
-                    class="nav-item"
+                    href="{% url 'ai_studio:dashboard' %}"
+                    class="nav-item {% if request.resolver_match.namespace == 'ai_studio' %}active{% endif %}"
                 >
 
                     <span class="nav-item-icon">
@@ -3000,10 +3000,6 @@
 
                     <span class="nav-item-label">
                         AI Studio
-                    </span>
-
-                    <span class="nav-badge">
-                        Soon
                     </span>
 
                 </a>
@@ -3571,8 +3567,6 @@
 
             </a>
 
-
-            
 <a
     href="{% url 'vibespace:create' %}"
     class="mobile-create-button"
@@ -3584,35 +3578,13 @@
 
 
 
-            <!-- Mobile Notifications -->
-
             <a
-                href="{% url 'notification_list' %}"
-                class="
-                    {% if request.resolver_match.url_name == 'notification_list' %}
-                        active
-                    {% endif %}
-                "
+                href="{% url 'ai_studio:dashboard' %}"
+                class="{% if request.resolver_match.namespace == 'ai_studio' %}active{% endif %}"
+                aria-label="AI Studio"
             >
-
-                <span style="position: relative;">
-
-                    ♢
-
-                    <span
-                        class="notification-count-badge"
-                        data-notification-badge
-                    >
-                        0
-                    </span>
-
-                </span>
-
-
-                <small>
-                    Alerts
-                </small>
-
+                <span>✨</span>
+                <small>AI Studio</small>
             </a>
 
 
