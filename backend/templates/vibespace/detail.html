@@ -465,9 +465,17 @@
         </a>
 
         {% if request.user.is_authenticated and request.user.pk == vibe.author_id %}
-            <a href="{% url 'vibespace:my_vibes' %}" class="vibe-back-link">
-                My Vibes →
-            </a>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+                <a href="{% url 'vibespace:edit' vibe.pk %}" class="vibe-back-link">
+                    Edit Vibe
+                </a>
+                <a href="{% url 'vibespace:delete' vibe.pk %}" class="vibe-back-link">
+                    Delete Vibe
+                </a>
+                <a href="{% url 'vibespace:my_vibes' %}" class="vibe-back-link">
+                    My Vibes →
+                </a>
+            </div>
         {% endif %}
     </div>
 
@@ -728,6 +736,10 @@
                 >Explore more Vibes ↗</a>
 
                 {% if request.user.is_authenticated and request.user.pk == vibe.author_id %}
+                    <a
+                        href="{% url 'vibespace:edit' vibe.pk %}"
+                        class="vibe-detail-button"
+                    >Edit this Vibe</a>
                     <a
                         href="{% url 'vibespace:create' %}"
                         class="vibe-detail-button"

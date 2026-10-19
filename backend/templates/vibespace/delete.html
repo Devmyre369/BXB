@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Vibe | BxB{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vibe-delete-page {
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 48px 22px;
+        color: var(--text-primary);
+    }
+
+    .vibe-delete-card {
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-card);
+    }
+
+    .vibe-delete-card h1 {
+        margin-bottom: 12px;
+        font-size: clamp(24px, 4vw, 32px);
+    }
+
+    .vibe-delete-card p {
+        margin-bottom: 22px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+
+    .vibe-delete-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .vibe-delete-actions a,
+    .vibe-delete-actions button {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 15px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        background: transparent;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .vibe-delete-actions button {
+        border-color: #dc2626;
+        background: #dc2626;
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="vibe-delete-page">
+    <section class="vibe-delete-card" aria-labelledby="delete-vibe-heading">
+        <h1 id="delete-vibe-heading">Delete this Vibe?</h1>
+        <p>
+            This permanently removes
+            <strong>{{ vibe.caption|default:"this Vibe" }}</strong>
+            and its comments and likes. This action can't be undone.
+        </p>
+        <div class="vibe-delete-actions">
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit">Delete Vibe</button>
+            </form>
+            <a href="{% url 'vibespace:detail' vibe.pk %}">Keep Vibe</a>
+        </div>
+    </section>
+</main>
+{% endblock %}

@@ -3051,7 +3051,7 @@
 
                 <a
                     href="{% url 'vibespace:explore_list' %}"
-                    class="nav-item {% if '/vibespace/' in request.path and request.path != '/vibespace/create/' and request.path != '/vibespace/my/' %}active{% endif %}"
+                    class="nav-item {% if request.resolver_match.namespace == 'vibespace' and request.resolver_match.url_name != 'create' and request.resolver_match.url_name != 'my_vibes' and request.resolver_match.url_name != 'edit' and request.resolver_match.url_name != 'delete' %}active{% endif %}"
                 >
 
                     <span class="nav-item-icon">
@@ -3063,6 +3063,16 @@
                     </span>
 
                 </a>
+
+                {% if user.is_authenticated %}
+                <a
+                    href="{% url 'vibespace:my_vibes' %}"
+                    class="nav-item {% if request.resolver_match.namespace == 'vibespace' and request.resolver_match.url_name == 'my_vibes' or request.resolver_match.namespace == 'vibespace' and request.resolver_match.url_name == 'edit' or request.resolver_match.namespace == 'vibespace' and request.resolver_match.url_name == 'delete' %}active{% endif %}"
+                >
+                    <span class="nav-item-icon">✦</span>
+                    <span class="nav-item-label">My Vibes</span>
+                </a>
+                {% endif %}
 
 
                 {% if user.is_authenticated %}

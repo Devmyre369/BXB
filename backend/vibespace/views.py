@@ -5,7 +5,7 @@ from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from django.db.models import Count
+
 from profiles.models import Follow
 
 from .forms import VibeCreateForm
@@ -33,36 +33,6 @@ def create_vibe(request):
         "vibespace/create.html",
         {"form": form},
     )
-
-'''
-def explore_vibes(request):
-    vibes = (
-        Vibe.objects
-        .filter(is_public=True)
-        .select_related("author")
-        .prefetch_related("tags")
-        .annotate(
-            like_count=Count("vibelike", distinct=True),
-            comment_count=Count("vibecomment", distinct=True),
-        )
-        .order_by("-created_at")
-    )
-
-    # Filter the Explore page when a user clicks a tag.
-    tag_slug = request.GET.get("tag", "").strip()
-
-    if tag_slug:
-        vibes = vibes.filter(tags__slug=tag_slug)
-
-    return render(
-        request,
-        "vibespace/explore.html",
-        {
-            "vibes": vibes,
-            "selected_tag": tag_slug,
-        },
-    )
-'''
 
 
 def explore_vibes(request):
@@ -92,16 +62,17 @@ def explore_vibes(request):
         },
     )
 
+
 @login_required
 def my_vibes(request):
     vibes = (
         Vibe.objects
         .filter(author=request.user)
-        .select_related("author")
+        .select_related("author", "author__profile")
         .prefetch_related("tags")
         .annotate(
-            like_count=Count("vibelike", distinct=True),
-            comment_count=Count("vibecomment", distinct=True),
+            like_count=Count("likes", distinct=True),
+            comment_count=Count("comments", distinct=True),
         )
         .order_by("-created_at")
     )
@@ -113,6 +84,42 @@ def my_vibes(request):
     )
 
 
+@login_required
+def edit_vibe(request, pk):
+    vibe = get_object_or_404(Vibe, pk=pk, author=request.user)
+    form = VibeCreateForm(
+        request.POST if request.method == "POST" else None,
+        request.FILES if request.method == "POST" else None,
+        instance=vibe,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        vibe = form.save(commit=False)
+        vibe.author = request.user
+        vibe.save()
+        form.save_tags(vibe)
+        messages.success(request, "Your Vibe has been updated.")
+        return redirect("vibespace:detail", pk=vibe.pk)
+
+    return render(
+        request,
+        "vibespace/create.html",
+        {"form": form, "vibe": vibe, "is_edit": True},
+    )
+
+
+@login_required
+def delete_vibe(request, pk):
+    vibe = get_object_or_404(Vibe, pk=pk, author=request.user)
+
+    if request.method == "POST":
+        vibe.delete()
+        messages.success(request, "Your Vibe has been deleted.")
+        return redirect("vibespace:my_vibes")
+
+    return render(request, "vibespace/delete.html", {"vibe": vibe})
+
+
 
 def vibe_detail(request, pk):
     vibe = get_object_or_404(
@@ -120,8 +127,8 @@ def vibe_detail(request, pk):
         .select_related("author", "author__profile")
         .prefetch_related("tags")
         .annotate(
-            like_count=Count("vibelike", distinct=True),
-            comment_count=Count("vibecomment", distinct=True),
+            like_count=Count("likes", distinct=True),
+            comment_count=Count("comments", distinct=True),
         ),
         pk=pk,
     )

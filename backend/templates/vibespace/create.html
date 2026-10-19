@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 
-{% block title %}Create a Vibe | BxB{% endblock %}
+{% block title %}{% if is_edit %}Edit{% else %}Create{% endif %} a Vibe | BxB{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -238,8 +238,8 @@
 <main class="vibe-create-page">
     <header class="vibe-create-header">
         <span class="vibe-eyebrow">BxB · VibeSpace</span>
-        <h1>Share your vibe<span style="color:#60a5fa">.</span></h1>
-        <p>A moment, a meme, a creation or something worth sharing. Make it yours.</p>
+        <h1>{% if is_edit %}Edit your vibe{% else %}Share your vibe{% endif %}<span style="color:#60a5fa">.</span></h1>
+        <p>{% if is_edit %}Update your Vibe details, media, tags, or visibility.{% else %}A moment, a meme, a creation or something worth sharing. Make it yours.{% endif %}</p>
     </header>
 
     <div class="vibe-create-layout">
@@ -256,8 +256,13 @@
 
                 <div class="vibe-dropzone" id="vibe-dropzone">
                     <div class="vibe-upload-icon" aria-hidden="true">↥</div>
-                    <strong>Drop your media here</strong>
-                    <p class="vibe-muted">Or select a file from your device</p>
+                    {% if is_edit %}
+                        <strong>Replace your media (optional)</strong>
+                        <p class="vibe-muted">Leave this empty to keep the current media.</p>
+                    {% else %}
+                        <strong>Drop your media here</strong>
+                        <p class="vibe-muted">Or select a file from your device</p>
+                    {% endif %}
 
                     <label for="{{ form.media.id_for_label }}" class="vibe-select-button">
                         + Choose media
@@ -270,6 +275,19 @@
 
                 {% if form.media.errors %}
                     <div class="vibe-error">{{ form.media.errors }}</div>
+                {% endif %}
+
+                {% if is_edit and vibe.media %}
+                    <p class="vibe-help">Current media</p>
+                    <div class="vibe-preview">
+                        {% if vibe.is_video %}
+                            <video controls playsinline preload="metadata">
+                                <source src="{{ vibe.media.url }}">
+                            </video>
+                        {% else %}
+                            <img src="{{ vibe.media.url }}" alt="Current Vibe media">
+                        {% endif %}
+                    </div>
                 {% endif %}
 
                 <div class="vibe-preview" id="vibe-preview" hidden>
@@ -322,12 +340,23 @@
                     {% if form.target_audience.errors %}<div class="vibe-error">{{ form.target_audience.errors }}</div>{% endif %}
                 </div>
 
-                <button type="submit" class="vibe-publish-button" id="vibe-publish-button" disabled>
-                    Publish Vibe ↗
+                <div class="vibe-field">
+                    <div class="vibe-check-row">
+                        {{ form.is_public }}
+                        <div>
+                            <label for="{{ form.is_public.id_for_label }}">Share this Vibe publicly</label>
+                            <p class="vibe-help">Private Vibes are only visible to you and won't appear in Explore.</p>
+                        </div>
+                    </div>
+                    {% if form.is_public.errors %}<div class="vibe-error">{{ form.is_public.errors }}</div>{% endif %}
+                </div>
+
+                <button type="submit" class="vibe-publish-button" id="vibe-publish-button"{% if not is_edit %} disabled{% endif %}>
+                    {% if is_edit %}Save changes{% else %}Publish Vibe{% endif %} ↗
                 </button>
 
                 <p class="vibe-privacy-note">
-                    Your Vibe is public by default and may appear in Explore.
+                    Public Vibes may appear in Explore.
                     Only upload media you have the right to share.
                 </p>
             </form>
@@ -479,7 +508,7 @@
     });
 
     form.addEventListener("submit", function (event) {
-        if (!fileInput.files.length) {
+        if (!fileInput.files.length && !{{ is_edit|yesno:"true,false" }} ) {
             event.preventDefault();
             fileName.textContent = "Choose a file before publishing.";
             return;

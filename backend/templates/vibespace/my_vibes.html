@@ -476,8 +476,13 @@
                     <div class="my-vibe-card-footer">
                         <span class="my-vibe-type">
                             {% if vibe.is_video %}Video{% else %}Image / GIF{% endif %}
+                            · {% if vibe.is_public %}Public{% else %}Private{% endif %}
                         </span>
 
+                        <a href="{% url 'vibespace:edit' vibe.pk %}"
+                           class="my-vibe-view-link">
+                            Edit
+                        </a>
                         <a href="{% url 'vibespace:detail' vibe.pk %}"
                            class="my-vibe-view-link">
                             View Vibe →

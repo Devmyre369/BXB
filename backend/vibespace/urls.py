@@ -10,6 +10,8 @@ urlpatterns = [
     path("explore/", views.explore_vibes, name="explore_list"),
     path("my/", views.my_vibes, name="my_vibes"),
 
+    path("<int:pk>/edit/", views.edit_vibe, name="edit"),
+    path("<int:pk>/delete/", views.delete_vibe, name="delete"),
     path("<int:pk>/like/", views.toggle_vibe_like, name="like"),
     path("<int:pk>/comment/", views.add_vibe_comment, name="comment"),
     path("<int:pk>/follow/", views.toggle_creator_follow, name="follow"),
