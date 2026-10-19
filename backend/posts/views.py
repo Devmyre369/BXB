@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from notifications.models import Notification
+from vibespace.models import Vibe, VibeLike, VibeRepost
 
 from .forms import PostForm
 from .models import (
@@ -32,6 +33,42 @@ def feed(request):
         )
         .order_by("-created_at")
     )
+    vibes = (
+        Vibe.objects
+        .filter(is_public=True)
+        .select_related("author", "author__profile")
+        .prefetch_related(
+            "tags",
+            "likes",
+            "comments__user__profile",
+            "reposts",
+        )
+        .order_by("-created_at")
+    )
+    liked_vibe_ids = set(
+        VibeLike.objects.filter(
+            vibe__in=vibes,
+            user=request.user,
+        ).values_list("vibe_id", flat=True)
+    )
+    reposted_vibe_ids = set(
+        VibeRepost.objects.filter(
+            vibe__in=vibes,
+            user=request.user,
+        ).values_list("vibe_id", flat=True)
+    )
+    feed_items = [
+        {"type": "post", "object": post}
+        for post in posts
+    ]
+    feed_items.extend(
+        {"type": "vibe", "object": vibe}
+        for vibe in vibes
+    )
+    feed_items.sort(
+        key=lambda item: item["object"].created_at,
+        reverse=True,
+    )
 
     if request.method == "POST":
 
@@ -59,6 +96,9 @@ def feed(request):
         "posts/feed.html",
         {
             "posts": posts,
+            "feed_items": feed_items,
+            "liked_vibe_ids": liked_vibe_ids,
+            "reposted_vibe_ids": reposted_vibe_ids,
             "form": form,
         }
     )

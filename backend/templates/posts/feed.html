@@ -369,6 +369,105 @@
     background: color-mix(in srgb, var(--text-primary) 4%, transparent);
 }
 
+.vibe-feed-media {
+    display: block;
+    width: 100%;
+    max-height: 520px;
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+    object-fit: contain;
+}
+
+.vibe-feed-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.vibe-feed-tag {
+    color: var(--blue-light, var(--blue));
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.vibe-feed-badge {
+    display: inline-flex;
+    margin-top: 12px;
+    padding: 5px 9px;
+    border: 1px solid color-mix(in srgb, var(--blue) 25%, transparent);
+    border-radius: 999px;
+    color: var(--blue-light, var(--blue));
+    background: color-mix(in srgb, var(--blue) 8%, transparent);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.vibe-feed-comments {
+    display: none;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.vibe-feed-comments.visible {
+    display: block;
+}
+
+.vibe-feed-comment-list {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.vibe-feed-comment {
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.vibe-feed-comment-author {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.vibe-feed-comment-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.vibe-feed-comment-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    background: var(--input-bg, transparent);
+    font: inherit;
+    font-size: 12px;
+}
+
+.vibe-feed-comment-error {
+    display: none;
+    width: 100%;
+    margin-top: 8px;
+    color: #dc2626;
+    font-size: 11px;
+}
+
 /* POST INTERACTION BAR */
 
 .post-footer {
@@ -935,9 +1034,173 @@
 
         <!-- POSTS -->
 
-        {% if posts %}
+        {% if feed_items %}
 
-            {% for post in posts %}
+            {% for item in feed_items %}
+
+                {% if item.type == "vibe" %}
+                    {% with vibe=item.object %}
+                    <article
+                        class="card post-card vibe-feed-card"
+                        id="vibe-{{ vibe.id }}"
+                    >
+                        <div class="post-header">
+                            <div class="post-author">
+                                <a
+                                    href="{% url 'public_profile' vibe.author.username %}"
+                                    class="avatar avatar-small"
+                                    aria-label="View {{ vibe.author.username }}'s profile"
+                                >
+                                    {% if vibe.author.profile.avatar %}
+                                        <img
+                                            src="{{ vibe.author.profile.avatar.url }}"
+                                            alt="{{ vibe.author.username }}'s avatar"
+                                        >
+                                    {% else %}
+                                        <span>{{ vibe.author.username|first|upper }}</span>
+                                    {% endif %}
+                                </a>
+                                <div class="post-author-info">
+                                    <a
+                                        href="{% url 'public_profile' vibe.author.username %}"
+                                        class="post-author-name"
+                                    >
+                                        {{ vibe.author.get_full_name|default:vibe.author.username }}
+                                    </a>
+                                    <span class="post-time">
+                                        @{{ vibe.author.username }} · shared a Vibe
+                                        · {{ vibe.created_at|timesince }} ago
+                                    </span>
+                                </div>
+                            </div>
+                            <a
+                                class="post-action"
+                                href="{% url 'vibespace:detail' vibe.pk %}"
+                                aria-label="Open Vibe"
+                            >Open Vibe ↗</a>
+                        </div>
+
+                        {% if vibe.caption %}
+                            <div class="post-content">{{ vibe.caption }}</div>
+                        {% endif %}
+
+                        {% if vibe.is_video %}
+                            <video
+                                class="vibe-feed-media"
+                                controls
+                                playsinline
+                                preload="metadata"
+                            >
+                                <source src="{{ vibe.media.url }}">
+                                Your browser does not support video playback.
+                            </video>
+                        {% else %}
+                            <img
+                                class="vibe-feed-media"
+                                src="{{ vibe.media.url }}"
+                                alt="Vibe shared by {{ vibe.author.username }}"
+                                loading="lazy"
+                            >
+                        {% endif %}
+
+                        {% if vibe.description %}
+                            <div class="post-content">{{ vibe.description }}</div>
+                        {% endif %}
+
+                        {% if vibe.tags.all %}
+                            <div class="vibe-feed-tags">
+                                {% for tag in vibe.tags.all %}
+                                    <a
+                                        class="vibe-feed-tag"
+                                        href="{% url 'vibespace:explore' %}?tag={{ tag.slug|urlencode }}"
+                                    >#{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if vibe.is_campus_event %}
+                            <span class="vibe-feed-badge">
+                                Campus event{% if vibe.campus_event_name %}: {{ vibe.campus_event_name }}{% endif %}
+                            </span>
+                        {% endif %}
+
+                        <div class="post-footer">
+                            <button
+                                type="button"
+                                class="post-action interaction-button vibe-like-button {% if vibe.pk in liked_vibe_ids %}active{% endif %}"
+                                data-url="{% url 'vibespace:like' vibe.pk %}"
+                                data-action="vibe-like"
+                                aria-pressed="{% if vibe.pk in liked_vibe_ids %}true{% else %}false{% endif %}"
+                            >
+                                <span class="post-action-icon">♥</span>
+                                <span>Like</span>
+                                <span class="post-action-count" data-count="vibe-like">{{ vibe.likes.count }}</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="post-action vibe-comment-toggle"
+                                data-target="vibe-comments-{{ vibe.pk }}"
+                                aria-expanded="false"
+                            >
+                                <span class="post-action-icon">◌</span>
+                                <span>Comment</span>
+                                <span class="post-action-count" data-count="vibe-comment">{{ vibe.comments.count }}</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="post-action interaction-button vibe-repost-button {% if vibe.pk in reposted_vibe_ids %}active{% endif %}"
+                                data-url="{% url 'vibespace:revibe' vibe.pk %}"
+                                data-action="vibe-repost"
+                                aria-pressed="{% if vibe.pk in reposted_vibe_ids %}true{% else %}false{% endif %}"
+                            >
+                                <span class="post-action-icon">↻</span>
+                                <span>Revibe</span>
+                                <span class="post-action-count" data-count="vibe-repost">{{ vibe.reposts.count }}</span>
+                            </button>
+                        </div>
+
+                        <section
+                            class="vibe-feed-comments"
+                            id="vibe-comments-{{ vibe.pk }}"
+                            aria-label="Comments on this Vibe"
+                        >
+                            <div class="vibe-feed-comment-list" data-vibe-comment-list="{{ vibe.pk }}">
+                                {% for comment in vibe.comments.all %}
+                                    <div class="vibe-feed-comment">
+                                        <span class="vibe-feed-comment-author">@{{ comment.user.username }}</span>
+                                        {{ comment.text }}
+                                    </div>
+                                {% empty %}
+                                    <div class="comment-empty" data-vibe-empty-comments="{{ vibe.pk }}">
+                                        No comments yet. Start the conversation.
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <form
+                                class="vibe-feed-comment-form"
+                                data-vibe-id="{{ vibe.pk }}"
+                                data-url="{% url 'vibespace:comment' vibe.pk %}"
+                            >
+                                {% csrf_token %}
+                                <textarea
+                                    class="vibe-feed-comment-input"
+                                    name="text"
+                                    maxlength="1000"
+                                    rows="1"
+                                    placeholder="Write a comment..."
+                                    aria-label="Write a comment"
+                                    required
+                                ></textarea>
+                                <button type="submit" class="btn btn-primary comment-submit">
+                                    Send
+                                </button>
+                            </form>
+                            <div class="vibe-feed-comment-error" data-vibe-error="{{ vibe.pk }}"></div>
+                        </section>
+                    </article>
+                    {% endwith %}
+                {% else %}
+                    {% with post=item.object %}
 
                 <article
                     class="card post-card"
@@ -1214,6 +1477,8 @@
 
                 </article>
 
+                    {% endwith %}
+                {% endif %}
             {% endfor %}
 
         {% else %}
@@ -1271,8 +1536,8 @@
             <div class="stats-grid">
 
                 <div class="stat-box">
-                    <div class="stat-number">{{ posts|length }}</div>
-                    <div class="stat-label">Posts</div>
+                    <div class="stat-number">{{ feed_items|length }}</div>
+                    <div class="stat-label">Feed items</div>
                 </div>
 
                 <div class="stat-box">
@@ -1363,6 +1628,35 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
 
+                if (action === "vibe-like") {
+                    button.classList.toggle("active", data.is_liked);
+                    button.setAttribute("aria-pressed", String(data.is_liked));
+
+                    const count = button.querySelector(
+                        '[data-count="vibe-like"]'
+                    );
+
+                    if (count) {
+                        count.textContent = data.like_count;
+                    }
+                }
+
+                if (action === "vibe-repost") {
+                    button.classList.toggle("active", data.is_reposted);
+                    button.setAttribute(
+                        "aria-pressed",
+                        String(data.is_reposted)
+                    );
+
+                    const count = button.querySelector(
+                        '[data-count="vibe-repost"]'
+                    );
+
+                    if (count) {
+                        count.textContent = data.repost_count;
+                    }
+                }
+
                 if (action === "save") {
                     button.classList.toggle("active", data.is_saved);
                 }
@@ -1386,6 +1680,77 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
 
+    });
+
+    /* VIBE COMMENTS */
+
+    document.querySelectorAll(".vibe-comment-toggle").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const section = document.getElementById(button.dataset.target);
+            if (!section) return;
+
+            const isExpanded = section.classList.toggle("visible");
+            button.setAttribute("aria-expanded", String(isExpanded));
+            if (isExpanded) {
+                section.querySelector(".vibe-feed-comment-input")?.focus();
+            }
+        });
+    });
+
+    document.querySelectorAll(".vibe-feed-comment-form").forEach(function (form) {
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const input = form.querySelector(".vibe-feed-comment-input");
+            const text = input.value.trim();
+            if (!text) {
+                input.focus();
+                return;
+            }
+
+            const vibeId = form.dataset.vibeId;
+            const submitButton = form.querySelector(".comment-submit");
+            const errorBox = document.querySelector(
+                `[data-vibe-error="${vibeId}"]`
+            );
+            submitButton.disabled = true;
+            submitButton.textContent = "Sending...";
+            errorBox.style.display = "none";
+            errorBox.textContent = "";
+
+            try {
+                const formData = new FormData();
+                formData.append("text", text);
+                const data = await postRequest(form.dataset.url, formData);
+                const list = document.querySelector(
+                    `[data-vibe-comment-list="${vibeId}"]`
+                );
+
+                document.querySelector(
+                    `[data-vibe-empty-comments="${vibeId}"]`
+                )?.remove();
+
+                const comment = document.createElement("div");
+                comment.className = "vibe-feed-comment";
+                const author = document.createElement("span");
+                author.className = "vibe-feed-comment-author";
+                author.textContent = "@" + data.comment.username;
+                comment.appendChild(author);
+                comment.appendChild(document.createTextNode(data.comment.text));
+                list.appendChild(comment);
+
+                const card = form.closest(".vibe-feed-card");
+                const count = card.querySelector('[data-count="vibe-comment"]');
+                count.textContent = data.comment_count;
+                input.value = "";
+            } catch (error) {
+                errorBox.textContent = error.message;
+                errorBox.style.display = "block";
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = "Send";
+            }
+        });
     });
 
     /* COMMENT TOGGLE */

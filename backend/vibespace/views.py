@@ -2,14 +2,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from profiles.models import Follow
 
 from .forms import VibeCreateForm
-from .models import Vibe, VibeComment, VibeLike
+from .models import Vibe, VibeComment, VibeLike, VibeRepost
 
 
 @login_required
@@ -194,13 +194,57 @@ def toggle_vibe_like(request, pk):
 
     if existing_like.exists():
         existing_like.delete()
-        messages.success(request, "You removed your like.")
+        is_liked = False
+        if request.headers.get("x-requested-with") != "XMLHttpRequest":
+            messages.success(request, "You removed your like.")
     else:
         VibeLike.objects.get_or_create(
             vibe=vibe,
             user=request.user,
         )
-        messages.success(request, "You liked this Vibe.")
+        is_liked = True
+        if request.headers.get("x-requested-with") != "XMLHttpRequest":
+            messages.success(request, "You liked this Vibe.")
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": True,
+                "is_liked": is_liked,
+                "like_count": vibe.likes.count(),
+            }
+        )
+
+    return redirect("vibespace:detail", pk=pk)
+
+
+@login_required
+@require_POST
+def toggle_vibe_repost(request, pk):
+    vibe = get_object_or_404(
+        Vibe,
+        pk=pk,
+        is_public=True,
+    )
+    repost, created = VibeRepost.objects.get_or_create(
+        vibe=vibe,
+        user=request.user,
+    )
+
+    if not created:
+        repost.delete()
+        is_reposted = False
+    else:
+        is_reposted = True
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": True,
+                "is_reposted": is_reposted,
+                "repost_count": vibe.reposts.count(),
+            }
+        )
 
     return redirect("vibespace:detail", pk=pk)
 
@@ -217,18 +261,45 @@ def add_vibe_comment(request, pk):
     text = request.POST.get("text", "").strip()
 
     if not text:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse(
+                {"success": False, "error": "Please write a comment first."},
+                status=400,
+            )
         messages.error(request, "Please write a comment first.")
     elif len(text) > 1000:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Comments must be 1,000 characters or fewer.",
+                },
+                status=400,
+            )
         messages.error(
             request,
             "Comments must be 1,000 characters or fewer.",
         )
     else:
-        VibeComment.objects.create(
+        comment = VibeComment.objects.create(
             vibe=vibe,
             user=request.user,
             text=text,
         )
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "success": True,
+                    "comment_count": vibe.comments.count(),
+                    "comment": {
+                        "username": comment.user.username,
+                        "text": comment.text,
+                        "created_at": comment.created_at.strftime(
+                            "%b %d, %Y · %I:%M %p"
+                        ),
+                    },
+                }
+            )
         messages.success(request, "Comment added.")
 
     return redirect("vibespace:detail", pk=pk)

@@ -145,6 +145,32 @@ class VibeLike(models.Model):
         return f"{self.user} likes Vibe #{self.vibe_id}"
 
 
+class VibeRepost(models.Model):
+    vibe = models.ForeignKey(
+        Vibe,
+        on_delete=models.CASCADE,
+        related_name="reposts",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="vibe_reposts",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["vibe", "user"],
+                name="unique_vibe_repost_per_user",
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} revibed Vibe #{self.vibe_id}"
+
+
 class VibeComment(models.Model):
     vibe = models.ForeignKey(
         Vibe,
