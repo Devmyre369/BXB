@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from notifications.models import Notification
+from profiles.models import Follow
 from vibespace.models import Vibe, VibeLike, VibeRepost
 
 from .forms import PostForm
@@ -57,6 +58,12 @@ def feed(request):
             user=request.user,
         ).values_list("vibe_id", flat=True)
     )
+    following_creator_ids = set(
+        Follow.objects.filter(
+            follower=request.user,
+            following__vibes__in=vibes,
+        ).values_list("following_id", flat=True)
+    )
     feed_items = [
         {"type": "post", "object": post}
         for post in posts
@@ -99,6 +106,7 @@ def feed(request):
             "feed_items": feed_items,
             "liked_vibe_ids": liked_vibe_ids,
             "reposted_vibe_ids": reposted_vibe_ids,
+            "following_creator_ids": following_creator_ids,
             "form": form,
         }
     )

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from profiles.models import Follow
@@ -53,12 +54,22 @@ def explore_vibes(request):
     if tag_slug:
         vibes = vibes.filter(tags__slug=tag_slug)
 
+    following_creator_ids = set()
+    if request.user.is_authenticated:
+        following_creator_ids = set(
+            Follow.objects.filter(
+                follower=request.user,
+                following__vibes__in=vibes,
+            ).values_list("following_id", flat=True)
+        )
+
     return render(
         request,
         "vibespace/explore.html",
         {
             "vibes": vibes,
             "selected_tag": tag_slug,
+            "following_creator_ids": following_creator_ids,
         },
     )
 
@@ -340,5 +351,13 @@ def toggle_creator_follow(request, pk):
             request,
             f"You are now following @{creator.username}.",
         )
+
+    next_url = request.POST.get("next", "")
+    if url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
 
     return redirect("vibespace:detail", pk=pk)

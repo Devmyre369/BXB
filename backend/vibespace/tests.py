@@ -5,6 +5,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from profiles.models import Follow
+
 from .forms import VibeCreateForm
 from .models import Vibe, VibeComment, VibeLike, VibeTag
 
@@ -65,6 +67,73 @@ class VibeSpaceTests(TestCase):
         self.assertEqual(
             [vibe.pk for vibe in response.context["vibes"]],
             [public_vibe.pk],
+        )
+
+    def test_explore_shows_creator_follow_control_and_current_state(self):
+        vibe = self.create_vibe()
+        self.client.force_login(self.other_user)
+
+        response = self.client.get(reverse("vibespace:explore"))
+
+        self.assertContains(
+            response,
+            reverse("vibespace:follow", args=[vibe.pk]),
+        )
+        self.assertContains(response, "+ Follow")
+
+        Follow.objects.create(
+            follower=self.other_user,
+            following=self.author,
+        )
+        response = self.client.get(reverse("vibespace:explore"))
+
+        self.assertContains(response, "Following")
+        self.assertIn(self.author.pk, response.context["following_creator_ids"])
+
+    def test_follow_from_vibe_toggles_creator_and_returns_to_source(self):
+        vibe = self.create_vibe()
+        self.client.force_login(self.other_user)
+        follow_url = reverse("vibespace:follow", args=[vibe.pk])
+        explore_url = f"{reverse('vibespace:explore')}?tag=campus"
+
+        response = self.client.post(
+            follow_url,
+            {"next": explore_url},
+        )
+
+        self.assertRedirects(response, explore_url)
+        self.assertTrue(
+            Follow.objects.filter(
+                follower=self.other_user,
+                following=self.author,
+            ).exists()
+        )
+
+        response = self.client.post(
+            follow_url,
+            {"next": explore_url},
+        )
+
+        self.assertRedirects(response, explore_url)
+        self.assertFalse(
+            Follow.objects.filter(
+                follower=self.other_user,
+                following=self.author,
+            ).exists()
+        )
+
+    def test_follow_from_vibe_rejects_external_return_url(self):
+        vibe = self.create_vibe()
+        self.client.force_login(self.other_user)
+
+        response = self.client.post(
+            reverse("vibespace:follow", args=[vibe.pk]),
+            {"next": "https://example.com/"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("vibespace:detail", args=[vibe.pk]),
         )
 
     def test_private_vibe_is_only_visible_to_its_author(self):

@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from profiles.models import Follow
 from vibespace.models import Vibe, VibeComment, VibeLike, VibeRepost
 
 from .models import Post
@@ -83,6 +84,32 @@ class MainFeedTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Only a Vibe")
         self.assertNotContains(response, "Your community starts here.")
+
+    def test_feed_renders_follow_control_for_vibe_creators(self):
+        creator = get_user_model().objects.create_user(
+            username="vibecreator",
+            email="vibecreator@example.com",
+            password="test-password",
+        )
+        vibe = Vibe.objects.create(
+            author=creator,
+            media="vibes/creator.jpg",
+            caption="Follow this creator",
+        )
+
+        response = self.client.get(reverse("feed"))
+
+        self.assertContains(
+            response,
+            reverse("vibespace:follow", args=[vibe.pk]),
+        )
+        self.assertContains(response, "+ Follow")
+
+        Follow.objects.create(follower=self.user, following=creator)
+        response = self.client.get(reverse("feed"))
+
+        self.assertContains(response, "Following")
+        self.assertIn(creator.pk, response.context["following_creator_ids"])
 
     def test_feed_renders_inline_vibe_like_and_comment_controls(self):
         vibe = Vibe.objects.create(

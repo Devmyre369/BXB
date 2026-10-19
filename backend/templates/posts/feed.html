@@ -208,6 +208,23 @@
     gap: 15px;
 }
 
+.post-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.vibe-follow-form {
+    margin: 0;
+}
+
+.vibe-follow-button[aria-pressed="true"] {
+    color: var(--blue-light, var(--blue));
+    background: color-mix(in srgb, var(--blue) 10%, transparent);
+}
+
 .post-author {
     display: flex;
     align-items: center;
@@ -1073,11 +1090,34 @@
                                     </span>
                                 </div>
                             </div>
-                            <a
-                                class="post-action"
-                                href="{% url 'vibespace:detail' vibe.pk %}"
-                                aria-label="Open Vibe"
-                            >Open Vibe ↗</a>
+                            <div class="post-header-actions">
+                                {% if request.user.pk != vibe.author_id %}
+                                    <form
+                                        method="post"
+                                        action="{% url 'vibespace:follow' vibe.pk %}"
+                                        class="vibe-follow-form"
+                                    >
+                                        {% csrf_token %}
+                                        <input
+                                            type="hidden"
+                                            name="next"
+                                            value="{{ request.get_full_path }}"
+                                        >
+                                        <button
+                                            type="submit"
+                                            class="post-action vibe-follow-button {% if vibe.author_id in following_creator_ids %}active{% endif %}"
+                                            aria-pressed="{% if vibe.author_id in following_creator_ids %}true{% else %}false{% endif %}"
+                                        >
+                                            {% if vibe.author_id in following_creator_ids %}Following{% else %}+ Follow{% endif %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <a
+                                    class="post-action"
+                                    href="{% url 'vibespace:detail' vibe.pk %}"
+                                    aria-label="Open Vibe"
+                                >Open Vibe ↗</a>
+                            </div>
                         </div>
 
                         {% if vibe.caption %}

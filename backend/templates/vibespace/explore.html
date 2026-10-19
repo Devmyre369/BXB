@@ -252,7 +252,31 @@
     }
 
     .vibe-card-author-info {
+        flex: 1;
         min-width: 0;
+    }
+
+    .vibe-follow-form {
+        flex: 0 0 auto;
+        margin: 0;
+    }
+
+    .vibe-follow-button {
+        min-height: 32px;
+        padding: 0 10px;
+        border: 1px solid var(--ve-card-border);
+        border-radius: 9px;
+        color: var(--ve-open-link);
+        background: transparent;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .vibe-follow-button:hover,
+    .vibe-follow-button[aria-pressed="true"] {
+        border-color: var(--ve-open-link);
+        background: rgba(59,130,246,.1);
     }
 
     .vibe-card-author-name {
@@ -515,6 +539,27 @@
                                 {{ vibe.created_at|timesince }} ago
                             </div>
                         </div>
+                        {% if request.user.is_authenticated and request.user.pk != vibe.author_id %}
+                            <form
+                                method="post"
+                                action="{% url 'vibespace:follow' vibe.pk %}"
+                                class="vibe-follow-form"
+                            >
+                                {% csrf_token %}
+                                <input
+                                    type="hidden"
+                                    name="next"
+                                    value="{{ request.get_full_path }}"
+                                >
+                                <button
+                                    type="submit"
+                                    class="vibe-follow-button"
+                                    aria-pressed="{% if vibe.author_id in following_creator_ids %}true{% else %}false{% endif %}"
+                                >
+                                    {% if vibe.author_id in following_creator_ids %}Following{% else %}+ Follow{% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
                     </div>
 
                     <div class="vibe-card-caption">

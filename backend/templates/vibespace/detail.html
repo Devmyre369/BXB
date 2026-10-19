@@ -571,33 +571,24 @@
 
 {% if request.user.is_authenticated and request.user.pk != vibe.author_id %}
     <div style="margin-top: 14px;">
-        {% if is_following %}
-            <form
-                method="post"
-                action="{% url 'profiles:unfollow_user' vibe.author.username %}"
+        <form
+            method="post"
+            action="{% url 'vibespace:follow' vibe.pk %}"
+        >
+            {% csrf_token %}
+            <input
+                type="hidden"
+                name="next"
+                value="{% url 'vibespace:detail' vibe.pk %}"
             >
-                {% csrf_token %}
-                <button
-                    type="submit"
-                    class="vibe-detail-button vibe-social-button"
-                >
-                    ✓ Following · Unfollow
-                </button>
-            </form>
-        {% else %}
-            <form
-                method="post"
-                action="{% url 'profiles:follow_user' vibe.author.username %}"
+            <button
+                type="submit"
+                class="vibe-detail-button vibe-social-button"
+                aria-pressed="{% if is_following %}true{% else %}false{% endif %}"
             >
-                {% csrf_token %}
-                <button
-                    type="submit"
-                    class="vibe-detail-button vibe-social-button"
-                >
-                    + Follow creator
-                </button>
-            </form>
-        {% endif %}
+                {% if is_following %}✓ Following · Unfollow{% else %}+ Follow creator{% endif %}
+            </button>
+        </form>
     </div>
 {% elif not request.user.is_authenticated %}
     <p class="vibe-detail-note" style="margin-top: 12px;">
