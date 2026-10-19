@@ -164,7 +164,8 @@
     }
 
     .posts-list,
-    .events-list {
+    .events-list,
+    .vibes-list {
         display: flex;
         flex-direction: column;
         gap: 14px;
@@ -236,6 +237,49 @@
         margin-top: 14px;
         color: #727b90;
         font-size: 12px;
+    }
+
+    .vibe-result-card {
+        padding: 18px;
+        background: #101522;
+        border: 1px solid #1d2638;
+        border-radius: 16px;
+    }
+
+    .vibe-result-card a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .vibe-result-card a:hover {
+        color: #4da3ff;
+    }
+
+    .vibe-result-media {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+        margin-top: 12px;
+        border-radius: 12px;
+        background: #080c14;
+        object-fit: contain;
+    }
+
+    .vibe-result-description {
+        margin-top: 10px;
+        color: #cbd5e1;
+        line-height: 1.65;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .vibe-result-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 10px;
+        color: #4da3ff;
+        font-size: 13px;
     }
 
     /* Event cards */
@@ -488,7 +532,7 @@
             <h1>Search BitsXBytes</h1>
 
             <p>
-                Find people, posts, and events across the BxB community.
+                Find people, posts, Vibes, and events across the BxB community.
             </p>
         {% endif %}
 
@@ -520,6 +564,13 @@
                 class="search-tab {% if search_type == 'posts' %}active{% endif %}"
             >
                 Posts
+            </a>
+
+            <a
+                href="{% url 'search' %}?q={{ query|urlencode }}&type=vibes"
+                class="search-tab {% if search_type == 'vibes' %}active{% endif %}"
+            >
+                Vibes
             </a>
 
             <a
@@ -719,6 +770,113 @@
 
                 {% endif %}
 
+            </section>
+
+        {% endif %}
+
+
+        <!-- VIBES -->
+
+        {% if search_type == "all" or search_type == "vibes" %}
+
+            <section class="search-section">
+                <div class="search-section-header">
+                    <h2>Vibes</h2>
+                    <span class="result-count">
+                        {{ vibes|length }}
+                        result{{ vibes|length|pluralize }}
+                    </span>
+                </div>
+
+                {% if vibes %}
+                    <div class="vibes-list">
+                        {% for vibe in vibes %}
+                            <article class="vibe-result-card">
+                                <div class="post-author">
+                                    <a href="{% url 'public_profile' vibe.author.username %}">
+                                        {% if vibe.author.profile.avatar %}
+                                            <img
+                                                src="{{ vibe.author.profile.avatar.url }}"
+                                                alt="{{ vibe.author.username }}"
+                                                class="post-author-avatar"
+                                            >
+                                        {% else %}
+                                            <div class="post-author-placeholder">
+                                                {{ vibe.author.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </a>
+                                    <div>
+                                        <a
+                                            class="post-author-name"
+                                            href="{% url 'public_profile' vibe.author.username %}"
+                                        >
+                                            {{ vibe.author.get_full_name|default:vibe.author.username }}
+                                        </a>
+                                        <div class="post-author-username">
+                                            @{{ vibe.author.username }}
+                                            · {{ vibe.created_at|timesince }} ago
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if vibe.caption %}
+                                    <a href="{% url 'vibespace:detail' vibe.pk %}">
+                                        <div class="post-content">{{ vibe.caption }}</div>
+                                    </a>
+                                {% endif %}
+
+                                <a href="{% url 'vibespace:detail' vibe.pk %}">
+                                    {% if vibe.is_video %}
+                                        <video
+                                            class="vibe-result-media"
+                                            controls
+                                            playsinline
+                                            preload="metadata"
+                                        >
+                                            <source src="{{ vibe.media.url }}">
+                                            Your browser does not support video playback.
+                                        </video>
+                                    {% else %}
+                                        <img
+                                            class="vibe-result-media"
+                                            src="{{ vibe.media.url }}"
+                                            alt="Vibe shared by {{ vibe.author.username }}"
+                                            loading="lazy"
+                                        >
+                                    {% endif %}
+                                </a>
+
+                                {% if vibe.description %}
+                                    <p class="vibe-result-description">
+                                        {{ vibe.description|truncatechars:300 }}
+                                    </p>
+                                {% endif %}
+
+                                {% if vibe.tags.all %}
+                                    <div class="vibe-result-tags">
+                                        {% for tag in vibe.tags.all %}
+                                            <a href="{% url 'search' %}?q={{ tag.name|urlencode }}&type=vibes">
+                                                #{{ tag.name }}
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <div class="post-date">
+                                    <a href="{% url 'vibespace:detail' vibe.pk %}">
+                                        Open Vibe
+                                    </a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <h3>No Vibes found</h3>
+                        <p>Try a different caption, creator, tag, or event name.</p>
+                    </div>
+                {% endif %}
             </section>
 
         {% endif %}

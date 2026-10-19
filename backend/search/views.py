@@ -3,15 +3,15 @@ from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Case, IntegerField, Q, Value, When
-from django.http import JsonResponse, request
+from django.http import JsonResponse
 from django.shortcuts import render
-from django.template import context
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from events.models import Event
 from posts.models import Post
 from users.models import User
+from vibespace.models import Vibe
 
 from .models import SearchHistory
 
@@ -21,11 +21,12 @@ def search(request):
     query = request.GET.get("q", "").strip()[:200]
     search_type = request.GET.get("type", "all")
 
-    if search_type not in ("all", "people", "posts", "events"):
+    if search_type not in ("all", "people", "posts", "vibes", "events"):
         search_type = "all"
 
     people = User.objects.none()
     posts = Post.objects.none()
+    vibes = Vibe.objects.none()
     events = Event.objects.none()
 
     if query:
@@ -85,6 +86,25 @@ def search(request):
                 .order_by("relevance", "-created_at")
             )
 
+        if search_type in ("all", "vibes"):
+            vibes = (
+                Vibe.objects
+                .filter(is_public=True)
+                .filter(
+                    Q(caption__icontains=query)
+                    | Q(description__icontains=query)
+                    | Q(author__username__icontains=query)
+                    | Q(author__first_name__icontains=query)
+                    | Q(author__last_name__icontains=query)
+                    | Q(tags__name__icontains=query)
+                    | Q(campus_event_name__icontains=query)
+                )
+                .select_related("author", "author__profile")
+                .prefetch_related("tags")
+                .distinct()
+                .order_by("-created_at")
+            )
+
         # Search published events.
         if search_type in ("all", "events"):
             events = (
@@ -114,33 +134,10 @@ def search(request):
         "search_type": search_type,
         "people": people,
         "posts": posts,
+        "vibes": vibes,
         "events": events,
         "recent_searches": recent_searches,
     }
-
-    # Temporary debugging: inspect the data passed to the template.
-    print("Logged-in user:", request.user.username)
-    print(
-        "History passed to template:",
-        list(
-            context["recent_searches"].values_list(
-                "query",
-                flat=True,
-            )
-        ),
-    )
-
-    print("Logged-in user:", request.user)
-    print("Is authenticated:", request.user.is_authenticated)
-    print(
-    "History passed to template:",
-    list(
-        context["recent_searches"].values_list(
-            "query",
-            flat=True,
-        )
-    ),
-)
 
     return render(request, "search/results.html", context)
 
@@ -215,6 +212,50 @@ def search_suggestions(request):
         )
         .order_by("start_date", "title")[:5]
     )
+
+    vibes = (
+        Vibe.objects
+        .filter(is_public=True)
+        .filter(
+            Q(caption__icontains=query)
+            | Q(description__icontains=query)
+            | Q(author__username__icontains=query)
+            | Q(author__first_name__icontains=query)
+            | Q(author__last_name__icontains=query)
+            | Q(tags__name__icontains=query)
+            | Q(campus_event_name__icontains=query)
+        )
+        .select_related("author")
+        .prefetch_related("tags")
+        .distinct()
+        .order_by("-created_at")[:5]
+    )
+
+    for vibe in vibes:
+        title = vibe.caption.strip() or f"Vibe by @{vibe.author.username}"
+        subtitle = vibe.description.strip()
+        if not subtitle:
+            subtitle = ", ".join(
+                f"#{tag.name}" for tag in vibe.tags.all()[:3]
+            )
+        if not subtitle:
+            subtitle = f"Shared by @{vibe.author.username}"
+        if len(subtitle) > 80:
+            subtitle = subtitle[:77] + "..."
+
+        results.append({
+            "type": "vibe",
+            "title": title,
+            "subtitle": subtitle,
+            "url": reverse(
+                "vibespace:detail",
+                kwargs={"pk": vibe.pk},
+            ),
+            "avatar": (
+                vibe.media.url
+                if vibe.media and not vibe.is_video else ""
+            ),
+        })
 
     for person in people:
         profile = getattr(person, "profile", None)
