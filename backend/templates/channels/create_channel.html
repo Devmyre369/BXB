@@ -1,0 +1,63 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="channels-page">
+    <div class="channels-header">
+        <a href="{% url 'channels:list' %}" class="channels-back">
+            ← Back to Channels
+        </a>
+
+        <h1>Create a Channel</h1>
+        <p>Bring students together around a college, club, department, or community.</p>
+    </div>
+
+    <div class="channel-form-card">
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="channel-form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="channel-form-field">
+                <label for="{{ form.name.id_for_label }}">Channel name</label>
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+
+            <div class="channel-form-field">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                {{ form.description.errors }}
+            </div>
+
+            <div class="channel-form-field">
+                <label for="{{ form.category.id_for_label }}">Category</label>
+                {{ form.category }}
+                {{ form.category.errors }}
+            </div>
+
+            <div class="channel-form-field">
+                <label for="{{ form.college.id_for_label }}">College or university (optional)</label>
+                {{ form.college }}
+                {{ form.college.errors }}
+            </div>
+
+            <div class="channel-form-visibility">
+                {{ form.is_public }}
+                <label for="{{ form.is_public.id_for_label }}">
+                    Public Channel
+                    <small>Anyone can discover this Channel in the listing.</small>
+                </label>
+            </div>
+
+            <button type="submit" class="channel-submit-btn">
+                Create Channel
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

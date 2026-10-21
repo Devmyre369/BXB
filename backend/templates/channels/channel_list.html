@@ -1,0 +1,64 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Channels | BxB{% endblock %}
+
+{% block content %}
+<div class="channels-page">
+    <section class="channels-hero">
+        <div>
+            <span class="channels-eyebrow">YOUR CAMPUS. YOUR COMMUNITY.</span>
+            <h1>Discover Channels</h1>
+            <p>Find your people, share updates, and build communities on BxB.</p>
+        </div>
+
+        <a href="{% url 'channels:create' %}" class="channel-create-link">
+            + Create Channel
+        </a>
+    </section>
+
+    <div class="channels-section-heading">
+        <h2>Explore communities</h2>
+        <span>{{ channels|length }} Channel{{ channels|length|pluralize }}</span>
+    </div>
+
+    <div class="channels-grid">
+        {% for channel in channels %}
+            <article class="channel-card">
+                <div class="channel-card-top">
+                    <span class="channel-category">
+                        {{ channel.get_category_display }}
+                    </span>
+                    <span class="channel-public-label">PUBLIC</span>
+                </div>
+
+                <h3>{{ channel.name }}</h3>
+
+                <p class="channel-description">
+                    {{ channel.description|truncatechars:150 }}
+                </p>
+
+                {% if channel.college %}
+                    <p class="channel-college">
+                        🎓 {{ channel.college }}
+                    </p>
+                {% endif %}
+
+                <div class="channel-card-footer">
+                    <span>By @{{ channel.created_by.username }}</span>
+                    <span>{{ channel.memberships.count }} member{{ channel.memberships.count|pluralize }}</span>
+                </div>
+            </article>
+        {% empty %}
+            <div class="channels-empty-state">
+                <h3>Your community starts here.</h3>
+                <p>No public Channels have been created yet. Be the first to bring students together.</p>
+                <a href="{% url 'channels:create' %}" class="channel-create-link">
+                    Create the first Channel
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+```
