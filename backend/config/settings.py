@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "events",
     'publish',
     'vibespace',
+    'channels',
 ]
 
 MIDDLEWARE = [
