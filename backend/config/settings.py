@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "events",
     'publish',
     'vibespace',
-    'user_world',
+
 ]
 
 MIDDLEWARE = [

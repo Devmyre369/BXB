@@ -61,6 +61,7 @@ urlpatterns = [
     path("publish/", include("publish.urls")),
     path("vibespace/", include("vibespace.urls", namespace="vibespace")),
     
+    
 ]
 
 if settings.DEBUG:
