@@ -60,7 +60,7 @@ urlpatterns = [
     path("events/", include("events.urls")),
     path("publish/", include("publish.urls")),
     path("vibespace/", include("vibespace.urls", namespace="vibespace")),
-    path("channels/", include("channels.urls", namespace="channels")),
+    
 ]
 
 if settings.DEBUG:
