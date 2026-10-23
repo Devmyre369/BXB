@@ -3038,16 +3038,16 @@
 </a>
 
 
-<a
-    href="{% url 'channels:list' %}"
-    class="nav-item {% if request.resolver_match.namespace == 'channels' %}active{% endif %}"
-    aria-label="Channels"
-    title="Channels"
->
-    <span class="nav-item-icon">◉</span>
-    <span class="nav-item-label">Channels</span>
-</a>
 
+<a
+    href="{% url 'user_world:list' %}"
+    class="nav-item {% if request.resolver_match.namespace == 'user_world' %}active{% endif %}"
+    aria-label="User-World"
+    title="User-World"
+>
+    <span class="nav-item-icon">◎</span>
+    <span class="nav-item-label">User-World</span>
+</a>
 
 
             </div>
@@ -3627,17 +3627,6 @@
                     Events
                 </small>
 
-            </a>
-
-
-            <a
-                href="{% url 'channels:list' %}"
-                class="{% if request.resolver_match.namespace == 'channels' %}active{% endif %}"
-                aria-label="Channels"
-                title="Channels"
-            >
-                <span>◉</span>
-                <small>Channels</small>
             </a>
 
 
