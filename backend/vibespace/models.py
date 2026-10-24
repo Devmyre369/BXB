@@ -57,10 +57,12 @@ class Vibe(models.Model):
     )
 
     media = models.FileField(
-        upload_to=vibe_upload_path,
-        validators=[validate_vibe_media],
-        max_length=255,
-    )
+    upload_to=vibe_upload_path,
+    validators=[validate_vibe_media],
+    max_length=255,
+    blank=True,
+    null=True,
+)
 
     caption = models.CharField(max_length=500, blank=True)
 
@@ -98,9 +100,17 @@ class Vibe(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
+    
     @property
     def is_video(self):
-        return Path(self.media.name).suffix.lower() in VIDEO_EXTENSIONS
+        return bool(
+        self.media
+        and Path(self.media.name).suffix.lower() in VIDEO_EXTENSIONS
+    )
+
+    @property
+    def is_text_only(self):
+        return not bool(self.media)
 
     def __str__(self):
         return f"Vibe by {self.author.username} (#{self.pk})"
