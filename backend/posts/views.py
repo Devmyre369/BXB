@@ -19,6 +19,23 @@ from .models import (
 @require_GET
 def feed(request):
     user = request.user
+    return render(
+        request,
+        "posts/home.html",
+        {
+            "profile_stats": {
+                "posts": user.posts.count(),
+                "followers": user.followers.count(),
+                "following": user.following.count(),
+            },
+        },
+    )
+
+
+@login_required
+@require_GET
+def community_feed(request):
+    user = request.user
     vibes = (
         Vibe.objects
         .filter(is_public=True)
@@ -97,12 +114,12 @@ def delete_post(request, post_id):
     )
 
     if post.author != request.user:
-        return redirect("feed")
+        return redirect("community_feed")
 
     if request.method == "POST":
         post.delete()
 
-    return redirect("feed")
+    return redirect("community_feed")
 
 
 @login_required

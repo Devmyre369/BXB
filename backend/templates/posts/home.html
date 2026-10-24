@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Home | BitsXBytes{% endblock %}
+
+{% block content %}
+<style>
+.home-dashboard {
+    width: min(100%, 640px);
+    margin: 0 auto;
+    color: var(--text-primary);
+}
+
+.home-header {
+    margin-bottom: 22px;
+}
+
+.home-title {
+    color: var(--text-primary);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.15;
+}
+
+.home-subtitle {
+    margin-top: 7px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.home-card {
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.welcome-card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--card-bg, var(--surface, transparent));
+}
+
+.welcome-card::before {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: radial-gradient(
+        circle at 100% 0%,
+        color-mix(in srgb, var(--blue) 15%, transparent),
+        transparent 65%
+    );
+    content: "";
+    pointer-events: none;
+}
+
+.welcome-card::after {
+    position: absolute;
+    z-index: -1;
+    right: -8px;
+    bottom: -25px;
+    color: color-mix(in srgb, var(--blue) 7%, transparent);
+    content: "B";
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 120px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.welcome-label {
+    color: var(--blue-light, var(--blue));
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.welcome-title {
+    position: relative;
+    z-index: 1;
+    margin-top: 8px;
+    color: var(--text-primary);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 19px;
+    line-height: 1.4;
+}
+
+.welcome-text {
+    position: relative;
+    z-index: 1;
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 17px;
+}
+
+.profile-card-title {
+    color: var(--text-primary);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.profile-card-link {
+    color: var(--blue-light, var(--blue));
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.profile-card-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.profile-card-user-info {
+    min-width: 0;
+}
+
+.profile-card-user-name {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.profile-card-username {
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.stat-box {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+}
+
+.stat-number {
+    color: var(--text-primary);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.stat-label {
+    margin-top: 2px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.community-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.community-link:hover {
+    border-color: var(--border-hover);
+    color: var(--blue-light, var(--blue));
+}
+
+@media (max-width: 600px) {
+    .home-title {
+        font-size: 25px;
+    }
+
+    .home-card {
+        padding: 16px;
+    }
+}
+</style>
+
+<div class="home-dashboard">
+    <header class="home-header">
+        <h1 class="home-title">Home</h1>
+        <p class="home-subtitle">Your BxB community at a glance.</p>
+    </header>
+
+    <section class="card home-card welcome-card" aria-labelledby="welcome-title">
+        <span class="welcome-label">Welcome to BxB</span>
+        <h2 class="welcome-title" id="welcome-title">
+            Build something worth sharing.
+        </h2>
+        <p class="welcome-text">
+            Connect with students, developers,
+            creators and builders from your community.
+        </p>
+    </section>
+
+    <section class="card home-card" aria-labelledby="profile-card-title">
+        <div class="profile-card-header">
+            <h2 class="profile-card-title" id="profile-card-title">Your Profile</h2>
+            <a href="{% url 'my_profile' %}" class="profile-card-link">
+                View profile
+            </a>
+        </div>
+
+        <div class="profile-card-user">
+            <a
+                href="{% url 'my_profile' %}"
+                class="avatar avatar-small"
+                aria-label="View your profile"
+            >
+                {% if user.profile.avatar %}
+                    <img
+                        src="{{ user.profile.avatar.url }}"
+                        alt="{{ user.username }}'s profile"
+                    >
+                {% else %}
+                    <span>{{ user.username|first|upper }}</span>
+                {% endif %}
+            </a>
+
+            <div class="profile-card-user-info">
+                <a href="{% url 'my_profile' %}" class="profile-card-user-name">
+                    {{ user.get_full_name|default:user.username }}
+                </a>
+                <div class="profile-card-username">@{{ user.username }}</div>
+            </div>
+        </div>
+
+        <div class="profile-stats-grid">
+            <div class="stat-box">
+                <div class="stat-number">{{ profile_stats.posts }}</div>
+                <div class="stat-label">Posts</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ profile_stats.followers }}</div>
+                <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">{{ profile_stats.following }}</div>
+                <div class="stat-label">Following</div>
+            </div>
+        </div>
+    </section>
+
+    <a href="{% url 'community_feed' %}" class="community-link">
+        Explore the community feed
+    </a>
+</div>
+{% endblock %}

@@ -59,7 +59,7 @@ class MainFeedTests(TestCase):
             created_at=now - timedelta(days=1)
         )
 
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "The newest Vibe")
@@ -86,7 +86,7 @@ class MainFeedTests(TestCase):
             caption="Only a Vibe",
         )
 
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Only a Vibe")
@@ -106,14 +106,21 @@ class MainFeedTests(TestCase):
         Follow.objects.create(follower=follower, following=self.user)
         Follow.objects.create(follower=self.user, following=following)
         Post.objects.create(author=self.user, content="Profile post")
+        Vibe.objects.create(
+            author=self.user,
+            media="vibes/home-hidden.jpg",
+            caption="A Vibe not shown on Home",
+        )
 
         response = self.client.get(reverse("feed"))
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Share a text update with the BxB community")
         self.assertNotContains(response, "Share text update")
+        self.assertNotContains(response, "A Vibe not shown on Home")
         self.assertContains(response, "Welcome to BxB")
         self.assertContains(response, "Your Profile")
+        self.assertContains(response, "Explore the community feed")
         self.assertEqual(
             response.context["profile_stats"],
             {"posts": 1, "followers": 1, "following": 1},
@@ -143,7 +150,7 @@ class MainFeedTests(TestCase):
             description="A text-only Vibe",
         )
 
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertContains(response, "Open Vibe")
         self.assertContains(
@@ -206,7 +213,7 @@ class MainFeedTests(TestCase):
             caption="Follow this creator",
         )
 
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertContains(
             response,
@@ -215,7 +222,7 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "+ Follow")
 
         Follow.objects.create(follower=self.user, following=creator)
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertContains(response, "Following")
         self.assertIn(creator.pk, response.context["following_creator_ids"])
@@ -227,7 +234,7 @@ class MainFeedTests(TestCase):
             caption="Interactive Vibe",
         )
 
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertContains(
             response,
@@ -247,7 +254,7 @@ class MainFeedTests(TestCase):
         )
         VibeRepost.objects.create(vibe=vibe, user=self.user)
 
-        response = self.client.get(reverse("feed"))
+        response = self.client.get(reverse("community_feed"))
 
         self.assertContains(response, "Revibe")
         self.assertContains(

@@ -234,7 +234,7 @@ class Notification(models.Model):
                 return reverse("vibespace:detail", args=[self.vibe_id])
 
             if self.post_id:
-                return f"{reverse('feed')}#post-{self.post_id}"
+                return f"{reverse('community_feed')}#post-{self.post_id}"
 
             if self.event_id:
                 return reverse("events:event_detail", args=[self.event.slug])
