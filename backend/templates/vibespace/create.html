@@ -70,7 +70,7 @@
     line-height: 1.6;
 }
 .vibe-dropzone {
-    min-height: 260px;
+    min-height: 220px;
     margin-top: 20px;
     display: flex;
     flex-direction: column;
@@ -229,7 +229,7 @@
     .vibe-create-page { padding: 16px 12px 50px; }
     .vibe-create-layout { grid-template-columns: 1fr; gap: 16px; }
     .vibe-panel { padding: 16px; border-radius: 16px; }
-    .vibe-dropzone { min-height: 220px; padding: 18px 12px; }
+    .vibe-dropzone { min-height: 200px; padding: 18px 12px; }
 }
 </style>
 {% endblock %}
@@ -239,13 +239,21 @@
     <header class="vibe-create-header">
         <span class="vibe-eyebrow">BxB · VibeSpace</span>
         <h1>{% if is_edit %}Edit your vibe{% else %}Share your Campus vibes{% endif %}<span style="color:#60a5fa">.</span></h1>
-        <p>{% if is_edit %}Update your Vibe details, media, tags, or visibility.{% else %}A moment, a meme, a creation or something worth sharing. Make it yours.{% endif %}</p>
+        <p>
+            {% if is_edit %}
+                Update your Vibe details, media, tags, or visibility.
+            {% else %}
+                A thought, a meme, a photo, a video, or something worth sharing. Make it yours.
+            {% endif %}
+        </p>
     </header>
 
     <div class="vibe-create-layout">
         <section class="vibe-panel">
-            <h2>Upload campus Vibes</h2>
-            <p class="vibe-muted">Upload your media and tell the community about it.</p>
+            <h2>Create a Vibe</h2>
+            <p class="vibe-muted">
+                Share text on its own, or add an image, GIF, or video.
+            </p>
 
             <form method="post" enctype="multipart/form-data" id="vibe-create-form">
                 {% csrf_token %}
@@ -256,12 +264,14 @@
 
                 <div class="vibe-dropzone" id="vibe-dropzone">
                     <div class="vibe-upload-icon" aria-hidden="true">↥</div>
+
                     {% if is_edit %}
                         <strong>Replace your media (optional)</strong>
                         <p class="vibe-muted">Leave this empty to keep the current media.</p>
                     {% else %}
-                        <strong>Drop your media here</strong>
-                        <p class="vibe-muted">Or select a file from your device</p>
+                        <strong>Add media (optional)</strong>
+                        <p class="vibe-muted">Drop a file here or choose one from your device.</p>
+                        <p class="vibe-muted">For a text-only Vibe, simply write below.</p>
                     {% endif %}
 
                     <label for="{{ form.media.id_for_label }}" class="vibe-select-button">
@@ -270,7 +280,7 @@
                     {{ form.media }}
 
                     <span class="vibe-muted">Images/GIFs up to 10 MB · Videos up to 200 MB</span>
-                    <span class="vibe-file-name" id="vibe-file-name"></span>
+                    <span class="vibe-file-name" id="vibe-file-name" aria-live="polite"></span>
                 </div>
 
                 {% if form.media.errors %}
@@ -298,22 +308,33 @@
                 <div class="vibe-field">
                     <label for="{{ form.caption.id_for_label }}">Caption (optional)</label>
                     {{ form.caption }}
-                    {% if form.caption.errors %}<div class="vibe-error">{{ form.caption.errors }}</div>{% endif %}
+                    {% if form.caption.errors %}
+                        <div class="vibe-error">{{ form.caption.errors }}</div>
+                    {% endif %}
                     <div class="vibe-help"><span id="caption-count">0</span>/500 characters</div>
                 </div>
 
                 <div class="vibe-field">
-                    <label for="{{ form.description.id_for_label }}">Describe your Vibe *</label>
+                    <label for="{{ form.description.id_for_label }}">What's on your mind?</label>
                     {{ form.description }}
-                    <p class="vibe-help">Tell people what's happening, what you made, or why this moment matters.</p>
-                    {% if form.description.errors %}<div class="vibe-error">{{ form.description.errors }}</div>{% endif %}
+                    <p class="vibe-help">
+                        Write your text-only Vibe here, or add context to your photo or video.
+                    </p>
+                    {% if form.description.errors %}
+                        <div class="vibe-error">{{ form.description.errors }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="vibe-field">
                     <label for="{{ form.tag_names.id_for_label }}">Tags</label>
                     {{ form.tag_names }}
-                    <p class="vibe-help">Separate tags with commas, e.g. coding, hackathon, collegefest. Tags help people find your Vibe.</p>
-                    {% if form.tag_names.errors %}<div class="vibe-error">{{ form.tag_names.errors }}</div>{% endif %}
+                    <p class="vibe-help">
+                        Separate tags with commas, e.g. coding, hackathon, collegefest.
+                        Tags help people find your Vibe.
+                    </p>
+                    {% if form.tag_names.errors %}
+                        <div class="vibe-error">{{ form.tag_names.errors }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="vibe-field">
@@ -321,23 +342,31 @@
                         {{ form.is_campus_event }}
                         <div>
                             <label for="{{ form.is_campus_event.id_for_label }}">Related to a campus event?</label>
-                            <p class="vibe-help">Enable this if the Vibe is about a college fest, hackathon, club activity, or campus event.</p>
+                            <p class="vibe-help">
+                                Enable this for a college fest, hackathon, club activity, or campus event.
+                            </p>
                         </div>
                     </div>
-                    {% if form.is_campus_event.errors %}<div class="vibe-error">{{ form.is_campus_event.errors }}</div>{% endif %}
+                    {% if form.is_campus_event.errors %}
+                        <div class="vibe-error">{{ form.is_campus_event.errors }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="vibe-field" id="campus-event-name-wrapper" hidden>
                     <label for="{{ form.campus_event_name.id_for_label }}">Campus event name *</label>
                     {{ form.campus_event_name }}
-                    {% if form.campus_event_name.errors %}<div class="vibe-error">{{ form.campus_event_name.errors }}</div>{% endif %}
+                    {% if form.campus_event_name.errors %}
+                        <div class="vibe-error">{{ form.campus_event_name.errors }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="vibe-field">
                     <label for="{{ form.target_audience.id_for_label }}">Target audience</label>
                     {{ form.target_audience }}
                     <p class="vibe-help">Choose the audience most relevant to your Vibe.</p>
-                    {% if form.target_audience.errors %}<div class="vibe-error">{{ form.target_audience.errors }}</div>{% endif %}
+                    {% if form.target_audience.errors %}
+                        <div class="vibe-error">{{ form.target_audience.errors }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="vibe-field">
@@ -345,13 +374,17 @@
                         {{ form.is_public }}
                         <div>
                             <label for="{{ form.is_public.id_for_label }}">Share this Vibe publicly</label>
-                            <p class="vibe-help">Private Vibes are only visible to you and won't appear in Explore.</p>
+                            <p class="vibe-help">
+                                Private Vibes are only visible to you and won't appear in Explore.
+                            </p>
                         </div>
                     </div>
-                    {% if form.is_public.errors %}<div class="vibe-error">{{ form.is_public.errors }}</div>{% endif %}
+                    {% if form.is_public.errors %}
+                        <div class="vibe-error">{{ form.is_public.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <button type="submit" class="vibe-publish-button" id="vibe-publish-button"{% if not is_edit %} disabled{% endif %}>
+                <button type="submit" class="vibe-publish-button" id="vibe-publish-button">
                     {% if is_edit %}Save changes{% else %}Publish Vibe{% endif %} ↗
                 </button>
 
@@ -399,6 +432,7 @@
 
     const fileInput = document.getElementById("{{ form.media.id_for_label }}");
     const captionInput = document.getElementById("{{ form.caption.id_for_label }}");
+    const descriptionInput = document.getElementById("{{ form.description.id_for_label }}");
     const eventCheckbox = document.getElementById("{{ form.is_campus_event.id_for_label }}");
     const eventName = document.getElementById("{{ form.campus_event_name.id_for_label }}");
     const eventWrapper = document.getElementById("campus-event-name-wrapper");
@@ -417,6 +451,7 @@
         previewUrl = null;
         previewImage.removeAttribute("src");
         previewVideo.removeAttribute("src");
+        previewVideo.load();
         previewImage.hidden = true;
         previewVideo.hidden = true;
         preview.hidden = true;
@@ -425,7 +460,10 @@
     function showFile(file) {
         clearPreview();
         fileName.textContent = "";
-        publishButton.disabled = true;
+
+        // Publishing is allowed without media.
+        publishButton.disabled = false;
+
         if (!file) return;
 
         const extension = file.name.split(".").pop().toLowerCase();
@@ -441,6 +479,7 @@
         }
 
         const maxSize = isVideo ? 200 * 1024 * 1024 : 10 * 1024 * 1024;
+
         if (file.size > maxSize) {
             fileName.textContent = isVideo
                 ? "Video exceeds the 200 MB limit."
@@ -460,6 +499,7 @@
             previewVideo.src = previewUrl;
             previewVideo.hidden = false;
         }
+
         publishButton.disabled = false;
     }
 
@@ -467,6 +507,7 @@
         const enabled = eventCheckbox.checked;
         eventWrapper.hidden = !enabled;
         eventName.required = enabled;
+
         if (!enabled) eventName.value = "";
     }
 
@@ -496,7 +537,9 @@
 
     dropzone.addEventListener("drop", function (event) {
         const files = event.dataTransfer.files;
+
         if (!files.length) return;
+
         try {
             const transfer = new DataTransfer();
             transfer.items.add(files[0]);
@@ -508,23 +551,36 @@
     });
 
     form.addEventListener("submit", function (event) {
-        if (!fileInput.files.length && !{{ is_edit|yesno:"true,false" }} ) {
+        const hasFile = fileInput.files.length > 0;
+        const hasDescription = descriptionInput.value.trim().length > 0;
+        const hasCaption = captionInput.value.trim().length > 0;
+        const isEditing = {{ is_edit|yesno:"true,false" }};
+        const hasExistingMedia = isEditing && {{ vibe.media|yesno:"true,false" }};
+
+        if (!hasFile && !hasExistingMedia && !hasDescription && !hasCaption) {
             event.preventDefault();
-            fileName.textContent = "Choose a file before publishing.";
+            fileName.textContent =
+                "Write something or choose media before publishing.";
+            descriptionInput.focus();
             return;
         }
+
         if (eventCheckbox.checked && !eventName.value.trim()) {
             event.preventDefault();
             eventName.focus();
             return;
         }
+
         publishButton.disabled = true;
-        publishButton.textContent = "Publishing…";
+        publishButton.textContent = isEditing ? "Saving…" : "Publishing…";
     });
 
     captionCount.textContent = captionInput.value.length;
     updateEventFields();
-    if (fileInput.files.length) showFile(fileInput.files[0]);
+
+    if (fileInput.files.length) {
+        showFile(fileInput.files[0]);
+    }
 
     window.addEventListener("beforeunload", clearPreview);
 })();
