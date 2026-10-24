@@ -76,85 +76,6 @@
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.45);
 }
 
-/* CREATE POST */
-
-.create-post {
-    margin-bottom: 22px;
-    padding: 18px;
-    color: var(--text-primary);
-}
-
-.create-post-header {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.create-post-avatar {
-    flex-shrink: 0;
-}
-
-.create-post-input {
-    flex: 1;
-    min-width: 0;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--text-primary) 3%, transparent);
-    color: var(--text-secondary);
-    font-size: 13px;
-    cursor: text;
-    transition: border-color var(--transition),
-                background var(--transition);
-}
-
-.create-post-input:hover {
-    border-color: var(--border-hover);
-    background: color-mix(in srgb, var(--blue) 6%, transparent);
-}
-
-.create-post-form {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-}
-
-.create-post-form textarea {
-    width: 100%;
-    min-height: 110px;
-    margin-bottom: 12px;
-    color: var(--text-primary);
-    background: var(--input-bg, transparent);
-    border-color: var(--border);
-}
-
-.create-post-form textarea::placeholder {
-    color: var(--text-muted);
-    opacity: 1;
-}
-
-.create-post-form textarea:focus {
-    border-color: var(--blue);
-    outline: 2px solid color-mix(in srgb, var(--blue) 20%, transparent);
-    outline-offset: 1px;
-}
-
-.create-post-form .form-errors {
-    margin-bottom: 10px;
-    color: var(--danger);
-    font-size: 12px;
-}
-
-.create-post-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
 /* POST CARD */
 
 .post-card {
@@ -233,8 +154,7 @@
 /* CLICKABLE PROFILE LINKS */
 
 .post-author-profile-link,
-.comment-profile-link,
-.create-post-profile-link {
+.comment-profile-link {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -244,15 +164,12 @@
 }
 
 .post-author-profile-link:hover,
-.comment-profile-link:hover,
-.create-post-profile-link:hover {
+.comment-profile-link:hover {
     text-decoration: none;
 }
 
 .post-author-profile-link:focus-visible,
 .comment-profile-link:focus-visible,
-.create-post-profile-link:focus-visible,
-.feed-my-profile:focus-visible,
 .comment-avatar:focus-visible {
     outline: 2px solid var(--blue);
     outline-offset: 4px;
@@ -269,44 +186,36 @@
     text-decoration: underline;
 }
 
-.feed-my-profile {
+.profile-card-user {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px;
-    margin-bottom: 18px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: var(--card-bg, var(--surface, transparent));
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: border-color var(--transition);
+    margin-bottom: 16px;
 }
 
-.feed-my-profile:hover {
-    border-color: var(--blue);
-}
-
-.feed-my-profile-info {
+.profile-card-user-info {
     min-width: 0;
-    flex: 1;
 }
 
-.feed-my-profile-title {
-    font-size: 13px;
+.profile-card-user-name {
+    color: var(--text-primary);
+    font-size: 14px;
     font-weight: 700;
+    text-decoration: none;
 }
 
-.feed-my-profile-subtitle {
+.profile-card-user-name:hover {
+    color: var(--blue-light, var(--blue));
+}
+
+.profile-card-username {
     margin-top: 3px;
     color: var(--text-secondary);
     font-size: 11px;
-    overflow-wrap: anywhere;
 }
 
-.feed-profile-arrow {
-    color: var(--blue-light, var(--blue));
-    font-size: 18px;
+.profile-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .post-menu {
@@ -860,7 +769,8 @@
     }
 
     .feed-sidebar {
-        display: none;
+        position: static;
+        order: -1;
     }
 }
 
@@ -879,10 +789,6 @@
 
     .post-card {
         padding: 16px;
-    }
-
-    .create-post {
-        padding: 15px;
     }
 
     .post-content {
@@ -910,8 +816,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .post-card,
-    .post-action,
-    .create-post-input {
+    .post-action {
         transition: none;
     }
 
@@ -939,30 +844,6 @@
     </div>
 </div>
 
-<!-- MY PROFILE SHORTCUT -->
-
-<a href="{% url 'my_profile' %}" class="feed-my-profile">
-    <div class="avatar avatar-small">
-        {% if user.profile.avatar %}
-            <img
-                src="{{ user.profile.avatar.url }}"
-                alt="{{ user.username }}'s profile"
-            >
-        {% else %}
-            <span>{{ user.username|first|upper }}</span>
-        {% endif %}
-    </div>
-
-    <div class="feed-my-profile-info">
-        <div class="feed-my-profile-title">My Profile</div>
-        <div class="feed-my-profile-subtitle">
-            @{{ user.username }} · View your profile
-        </div>
-    </div>
-
-    <span class="feed-profile-arrow" aria-hidden="true">→</span>
-</a>
-
 <!-- FEED LAYOUT -->
 
 <div class="feed-layout">
@@ -970,59 +851,6 @@
     <!-- MAIN FEED -->
 
     <section>
-
-        <!-- CREATE POST -->
-
-        <div class="card create-post">
-            <div class="create-post-header">
-
-                <a
-                    href="{% url 'my_profile' %}"
-                    class="avatar avatar-small create-post-avatar create-post-profile-link"
-                    aria-label="View your profile"
-                >
-                    {% if user.profile.avatar %}
-                        <img
-                            src="{{ user.profile.avatar.url }}"
-                            alt="{{ user.username }}'s profile"
-                        >
-                    {% else %}
-                        <span>{{ user.username|first|upper }}</span>
-                    {% endif %}
-                </a>
-
-                <div class="create-post-input">
-                    Share a text update with the BxB community...
-                </div>
-            </div>
-
-            <form
-                method="POST"
-                class="create-post-form"
-            >
-                {% csrf_token %}
-                <input type="hidden" name="content_type" value="vibe">
-                <input type="hidden" name="target_audience" value="everyone">
-                <input type="hidden" name="is_public" value="true">
-
-                {% if vibe_form.non_field_errors %}
-                    <div class="form-errors">{{ vibe_form.non_field_errors }}</div>
-                {% endif %}
-
-                <div>
-                    {{ vibe_form.description }}
-                    {% if vibe_form.description.errors %}
-                        <div class="form-errors">{{ vibe_form.description.errors }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="create-post-actions">
-                    <button type="submit" class="btn btn-primary">
-                        Share text update
-                    </button>
-                </div>
-            </form>
-        </div>
 
         <!-- POSTS -->
 
@@ -1540,25 +1368,54 @@
 
         </div>
 
-        <!-- COMMUNITY STATS -->
-
         <div class="card sidebar-card">
 
             <div class="sidebar-card-header">
-                <h3 class="sidebar-card-title">Community</h3>
-                <span class="sidebar-card-link">Live</span>
+                <h3 class="sidebar-card-title">Your Profile</h3>
+                <a href="{% url 'my_profile' %}" class="sidebar-card-link">
+                    View profile
+                </a>
             </div>
 
-            <div class="stats-grid">
+            <div class="profile-card-user">
+                <a
+                    href="{% url 'my_profile' %}"
+                    class="avatar avatar-small"
+                    aria-label="View your profile"
+                >
+                    {% if user.profile.avatar %}
+                        <img
+                            src="{{ user.profile.avatar.url }}"
+                            alt="{{ user.username }}'s profile"
+                        >
+                    {% else %}
+                        <span>{{ user.username|first|upper }}</span>
+                    {% endif %}
+                </a>
 
-                <div class="stat-box">
-                    <div class="stat-number">{{ feed_items|length }}</div>
-                    <div class="stat-label">Feed items</div>
+                <div class="profile-card-user-info">
+                    <a
+                        href="{% url 'my_profile' %}"
+                        class="profile-card-user-name"
+                    >
+                        {{ user.get_full_name|default:user.username }}
+                    </a>
+                    <div class="profile-card-username">@{{ user.username }}</div>
                 </div>
+            </div>
 
+            <div class="stats-grid profile-stats-grid">
                 <div class="stat-box">
-                    <div class="stat-number">BxB</div>
-                    <div class="stat-label">Network</div>
+                    <div class="stat-number">{{ profile_stats.posts }}</div>
+                    <div class="stat-label">Posts</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ profile_stats.followers }}</div>
+                    <div class="stat-label">Followers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ profile_stats.following }}</div>
+                    <div class="stat-label">Following</div>
                 </div>
 
             </div>

@@ -1,10 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET
 
 from profiles.models import Follow
-from vibespace.models import Vibe, VibeLike, VibeRepost
-from vibespace.forms import VibeCreateForm
 from vibespace.models import Vibe, VibeLike, VibeRepost
 from notifications.models import Notification
 from .models import (
@@ -17,7 +16,9 @@ from .models import (
 
 
 @login_required
+@require_GET
 def feed(request):
+    user = request.user
     vibes = (
         Vibe.objects
         .filter(is_public=True)
@@ -53,18 +54,6 @@ def feed(request):
         for vibe in vibes
     ]
 
-    vibe_form = VibeCreateForm()
-
-    if request.method == "POST":
-        vibe_form = VibeCreateForm(request.POST)
-
-        if vibe_form.is_valid():
-            vibe = vibe_form.save(commit=False)
-            vibe.author = request.user
-            vibe.save()
-            vibe_form.save_tags(vibe)
-            return redirect("feed")
-
     return render(
         request,
         "posts/feed.html",
@@ -73,7 +62,11 @@ def feed(request):
             "liked_vibe_ids": liked_vibe_ids,
             "reposted_vibe_ids": reposted_vibe_ids,
             "following_creator_ids": following_creator_ids,
-            "vibe_form": vibe_form,
+            "profile_stats": {
+                "posts": user.posts.count(),
+                "followers": user.followers.count(),
+                "following": user.following.count(),
+            },
         }
     )
 
