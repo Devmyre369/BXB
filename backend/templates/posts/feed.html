@@ -1285,14 +1285,12 @@
                             </div>
                         </div>
 
-                        <button
-                            type="button"
-                            class="post-menu"
-                            title="More options"
-                            aria-label="More post options"
-                        >
-                            ···
-                        </button>
+                        <a
+                            class="post-action"
+                            href="{% url 'post_detail' post.id %}"
+                            aria-label="Open Vibe"
+                            title="Open Vibe"
+                        >Open Vibe ↗</a>
 
                     </div>
 
@@ -1352,13 +1350,14 @@
 
                         <button
                             type="button"
-                            class="post-action interaction-button repost-button {% for repost in post.reposts.all %}{% if repost.user_id == user.id %}active{% endif %}{% endfor %}"
+                            class="post-action interaction-button repost-button {% if post.id in reposted_post_ids %}active{% endif %}"
                             data-url="{% url 'repost_post' post.id %}"
                             data-action="repost"
-                            title="Repost"
+                            title="Revibe"
+                            aria-pressed="{% if post.id in reposted_post_ids %}true{% else %}false{% endif %}"
                         >
                             <span class="post-action-icon">↻</span>
-                            <span>Repost</span>
+                            <span>Revibe</span>
                             <span class="post-action-count" data-count="repost">
                                 {{ post.reposts.count }}
                             </span>
@@ -1703,6 +1702,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (action === "repost") {
                     button.classList.toggle("active", data.is_reposted);
+                    button.setAttribute(
+                        "aria-pressed",
+                        String(data.is_reposted)
+                    );
 
                     const count = button.querySelector('[data-count="repost"]');
 

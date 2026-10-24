@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}My Vibes | BxB{% endblock %}
@@ -11,67 +12,72 @@
         --mv-page-text: #0f172a;
         --mv-eyebrow: #2563eb;
         --mv-muted: #64748b;
-        
+
         --mv-card-bg: #ffffff;
         --mv-card-border: #cbd5e1;
         --mv-card-border-hover: #2563eb;
         --mv-card-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-        
+
         --mv-stat-bg: #ffffff;
         --mv-stat-border: #cbd5e1;
         --mv-stat-value: #0f172a;
-        
+
         --mv-media-bg: #f1f5f9;
         --mv-badge-bg: rgba(255, 255, 255, 0.88);
         --mv-badge-text: #0f172a;
         --mv-badge-border: #cbd5e1;
-        
+
         --mv-caption-text: #334155;
         --mv-caption-empty: #64748b;
         --mv-date-text: #64748b;
-        
+
         --mv-card-footer-border: #f1f5f9;
         --mv-view-link: #2563eb;
         --mv-view-link-hover: #1d4ed8;
-        
+
         --mv-empty-bg: rgba(241, 245, 249, 0.7);
         --mv-empty-border: #cbd5e1;
         --mv-empty-icon-bg: rgba(37, 99, 235, 0.1);
         --mv-empty-icon-color: #2563eb;
+
+        --mv-placeholder-text: #64748b;
+        --mv-placeholder-icon: #94a3b8;
     }
 
-    /* Dark Mode Overrides */
     [data-theme="dark"] {
         --mv-page-text: #e8eefc;
         --mv-eyebrow: #60a5fa;
         --mv-muted: #94a3b8;
-        
+
         --mv-card-bg: #101521;
         --mv-card-border: rgba(255, 255, 255, 0.09);
         --mv-card-border-hover: rgba(96, 165, 250, 0.4);
         --mv-card-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        
+
         --mv-stat-bg: #101521;
         --mv-stat-border: rgba(255, 255, 255, 0.09);
         --mv-stat-value: #f8fafc;
-        
+
         --mv-media-bg: #070a12;
         --mv-badge-bg: rgba(7, 10, 18, 0.8);
         --mv-badge-text: #fff;
         --mv-badge-border: rgba(255, 255, 255, 0.12);
-        
+
         --mv-caption-text: #cbd5e1;
         --mv-caption-empty: #64748b;
         --mv-date-text: #64748b;
-        
+
         --mv-card-footer-border: rgba(255, 255, 255, 0.08);
         --mv-view-link: #60a5fa;
         --mv-view-link-hover: #bfdbfe;
-        
+
         --mv-empty-bg: rgba(255, 255, 255, 0.015);
         --mv-empty-border: rgba(255, 255, 255, 0.14);
         --mv-empty-icon-bg: rgba(59, 130, 246, 0.13);
         --mv-empty-icon-color: #60a5fa;
+
+        --mv-placeholder-text: #94a3b8;
+        --mv-placeholder-icon: #64748b;
     }
 
     .my-vibes-page {
@@ -200,7 +206,8 @@
         background: var(--mv-card-bg);
         box-shadow: var(--mv-card-shadow);
         box-sizing: border-box;
-        transition: transform .2s, border-color .2s, background 0.3s ease, box-shadow 0.3s ease;
+        transition: transform .2s, border-color .2s,
+                    background 0.3s ease, box-shadow 0.3s ease;
     }
 
     .my-vibe-card:hover {
@@ -243,6 +250,31 @@
         backdrop-filter: blur(8px);
     }
 
+    /* Missing-media fallback */
+    .my-vibe-media-placeholder {
+        width: 100%;
+        height: 100%;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px;
+        box-sizing: border-box;
+        color: var(--mv-placeholder-text);
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.7;
+    }
+
+    .my-vibe-media-placeholder-icon {
+        font-size: 34px;
+        line-height: 1;
+        color: var(--mv-placeholder-icon);
+    }
+
     .my-vibe-card-content {
         padding: 15px;
     }
@@ -271,6 +303,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
         gap: 8px;
         margin-top: 14px;
         padding-top: 12px;
@@ -331,7 +364,6 @@
         line-height: 1.8;
     }
 
-    /* Mobile App & Small Viewport Adaptability */
     @media (max-width: 900px) {
         .my-vibes-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -380,6 +412,16 @@
 
         .my-vibe-media {
             aspect-ratio: 3 / 3.7;
+        }
+
+        .my-vibe-media-placeholder {
+            min-height: 140px;
+            padding: 12px;
+            font-size: 10px;
+        }
+
+        .my-vibe-media-placeholder-icon {
+            font-size: 28px;
         }
     }
 </style>
@@ -438,23 +480,33 @@
                    class="my-vibe-media"
                    aria-label="Open your Vibe">
 
-                    {% if vibe.is_video %}
-                        <video muted playsinline preload="metadata">
-                            <source src="{{ vibe.media.url }}">
-                        </video>
-                        <span class="my-vibe-media-badge">▶ VIDEO</span>
-                    {% else %}
-                        <img
-                            src="{{ vibe.media.url }}"
-                            alt="Your published Vibe"
-                            loading="lazy"
-                        >
-                        {% if ".gif" in vibe.media.name|lower %}
-                            <span class="my-vibe-media-badge">GIF</span>
+                    {% if vibe.media %}
+                        {% if vibe.is_video %}
+                            <video muted playsinline preload="metadata">
+                                <source src="{{ vibe.media.url }}">
+                            </video>
+                            <span class="my-vibe-media-badge">▶ VIDEO</span>
                         {% else %}
-                            <span class="my-vibe-media-badge">IMAGE</span>
+                            <img
+                                src="{{ vibe.media.url }}"
+                                alt="Your published Vibe"
+                                loading="lazy"
+                            >
+
+                            {% if ".gif" in vibe.media.name|lower %}
+                                <span class="my-vibe-media-badge">GIF</span>
+                            {% else %}
+                                <span class="my-vibe-media-badge">IMAGE</span>
+                            {% endif %}
                         {% endif %}
+                    {% else %}
+                        <div class="my-vibe-media-placeholder">
+                            <span class="my-vibe-media-placeholder-icon">✦</span>
+                            <span>Media unavailable</span>
+                            <span>This Vibe has no attached file.</span>
+                        </div>
                     {% endif %}
+
                 </a>
 
                 <div class="my-vibe-card-content">
@@ -483,6 +535,7 @@
                            class="my-vibe-view-link">
                             Edit
                         </a>
+
                         <a href="{% url 'vibespace:detail' vibe.pk %}"
                            class="my-vibe-view-link">
                             View Vibe →

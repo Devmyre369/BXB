@@ -85,6 +85,63 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "Only a Vibe")
         self.assertNotContains(response, "Your community starts here.")
 
+    def test_feed_renders_open_vibe_and_revibe_controls_for_text_posts(self):
+        post = Post.objects.create(
+            author=self.user,
+            content="A text-only post",
+        )
+
+        response = self.client.get(reverse("feed"))
+
+        self.assertContains(response, "Open Vibe")
+        self.assertContains(
+            response,
+            reverse("post_detail", args=[post.pk]),
+        )
+        self.assertContains(response, "Revibe")
+        self.assertContains(
+            response,
+            reverse("repost_post", args=[post.pk]),
+        )
+
+    def test_open_vibe_displays_post_details(self):
+        post = Post.objects.create(
+            author=self.user,
+            content="The full text of this Vibe",
+        )
+
+        response = self.client.get(
+            reverse("post_detail", args=[post.pk]),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "The full text of this Vibe")
+        self.assertContains(response, "Back to feed")
+
+    def test_post_revibe_toggles_and_returns_count_for_feed(self):
+        post = Post.objects.create(
+            author=self.user,
+            content="Revibable text post",
+        )
+        revibe_url = reverse("repost_post", args=[post.pk])
+        ajax_headers = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+
+        first_response = self.client.post(revibe_url, **ajax_headers)
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(
+            first_response.json(),
+            {"success": True, "is_reposted": True, "repost_count": 1},
+        )
+
+        second_response = self.client.post(revibe_url, **ajax_headers)
+
+        self.assertEqual(second_response.status_code, 200)
+        self.assertEqual(
+            second_response.json(),
+            {"success": True, "is_reposted": False, "repost_count": 0},
+        )
+
     def test_feed_renders_follow_control_for_vibe_creators(self):
         creator = get_user_model().objects.create_user(
             username="vibecreator",

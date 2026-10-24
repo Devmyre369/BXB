@@ -20,7 +20,7 @@ from .models import (
 
 @login_required
 def feed(request):
-
+    form = PostForm()
     posts = (
         Post.objects
         .select_related(
@@ -70,6 +70,14 @@ def feed(request):
         {"type": "post", "object": post}
         for post in posts
     ]
+    reposted_post_ids = {
+        post.pk
+        for post in posts
+        if any(
+            repost.user_id == request.user.pk
+            for repost in post.reposts.all()
+        )
+    }
     feed_items.extend(
         {"type": "vibe", "object": vibe}
         for vibe in vibes
@@ -79,9 +87,6 @@ def feed(request):
         reverse=True,
     )
 
-    if request.method == "POST":
-
-            form = PostForm()
     vibe_form = VibeCreateForm()
 
     if request.method == "POST":
@@ -120,11 +125,30 @@ def feed(request):
             "feed_items": feed_items,
             "liked_vibe_ids": liked_vibe_ids,
             "reposted_vibe_ids": reposted_vibe_ids,
+            "reposted_post_ids": reposted_post_ids,
             "following_creator_ids": following_creator_ids,
             "form": form,
             "vibe_form": vibe_form,
         }
     )
+
+
+@login_required
+def post_detail(request, post_id):
+    post = get_object_or_404(
+        Post.objects.select_related(
+            "author",
+            "author__profile",
+        ),
+        id=post_id,
+    )
+
+    return render(
+        request,
+        "posts/detail.html",
+        {"post": post},
+    )
+
 
 @login_required
 def delete_post(request, post_id):
