@@ -85,6 +85,25 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "Only a Vibe")
         self.assertNotContains(response, "Your community starts here.")
 
+    def test_home_feed_composer_only_offers_text_posts(self):
+        response = self.client.get(reverse("feed"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Share something with the BxB community")
+        self.assertContains(response, "Publish")
+        self.assertNotContains(response, "Add image")
+        self.assertNotContains(response, 'type="file"')
+
+    def test_home_feed_publishes_text_only_posts(self):
+        response = self.client.post(
+            reverse("feed"),
+            {"content": "A text-only home feed post"},
+        )
+
+        self.assertRedirects(response, reverse("feed"))
+        post = Post.objects.get(content="A text-only home feed post")
+        self.assertFalse(post.image)
+
     def test_feed_renders_open_vibe_and_revibe_controls_for_text_posts(self):
         post = Post.objects.create(
             author=self.user,

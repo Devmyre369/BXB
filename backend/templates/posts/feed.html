@@ -145,41 +145,8 @@
 .create-post-actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 12px;
-}
-
-.file-upload {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    color: var(--text-secondary);
-    background: color-mix(in srgb, var(--text-primary) 3%, transparent);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all var(--transition);
-}
-
-.file-upload:hover {
-    color: var(--text-primary);
-    border-color: var(--border-hover);
-}
-
-.file-upload input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    overflow: hidden;
-}
-
-.file-upload:focus-within {
-    outline: 2px solid var(--blue);
-    outline-offset: 3px;
 }
 
 /* POST CARD */
@@ -938,8 +905,7 @@
 @media (prefers-reduced-motion: reduce) {
     .post-card,
     .post-action,
-    .create-post-input,
-    .file-upload {
+    .create-post-input {
         transition: none;
     }
 
@@ -1026,7 +992,6 @@
 
             <form
                 method="POST"
-                enctype="multipart/form-data"
                 class="create-post-form"
             >
                 {% csrf_token %}
@@ -1036,12 +1001,6 @@
                 </div>
 
                 <div class="create-post-actions">
-                    <label class="file-upload">
-                        <span>◫</span>
-                        Add image
-                        {{ form.image }}
-                    </label>
-
                     <button type="submit" class="btn btn-primary">
                         Publish
                     </button>

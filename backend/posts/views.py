@@ -108,7 +108,6 @@ def feed(request):
         else:
             form = PostForm(
                 request.POST,
-                request.FILES,
             )
 
             if form.is_valid():
