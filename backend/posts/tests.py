@@ -92,17 +92,34 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "Only a Vibe")
         self.assertNotContains(response, "Your community starts here.")
 
-    def test_home_feed_composer_only_offers_text_updates(self):
+    def test_home_feed_shows_profile_stats_without_post_composer(self):
+        follower = get_user_model().objects.create_user(
+            username="follower",
+            email="follower@example.com",
+            password="test-password",
+        )
+        following = get_user_model().objects.create_user(
+            username="following",
+            email="following@example.com",
+            password="test-password",
+        )
+        Follow.objects.create(follower=follower, following=self.user)
+        Follow.objects.create(follower=self.user, following=following)
+        Post.objects.create(author=self.user, content="Profile post")
+
         response = self.client.get(reverse("feed"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Share a text update with the BxB community")
-        self.assertContains(response, "Share text update")
-        self.assertNotContains(response, "Add image")
-        self.assertNotContains(response, 'type="file"')
-        self.assertContains(response, 'name="content_type" value="vibe"')
+        self.assertNotContains(response, "Share a text update with the BxB community")
+        self.assertNotContains(response, "Share text update")
+        self.assertContains(response, "Welcome to BxB")
+        self.assertContains(response, "Your Profile")
+        self.assertEqual(
+            response.context["profile_stats"],
+            {"posts": 1, "followers": 1, "following": 1},
+        )
 
-    def test_home_feed_publishes_text_only_vibes(self):
+    def test_home_feed_rejects_post_requests_without_creating_vibes(self):
         response = self.client.post(
             reverse("feed"),
             {
@@ -113,10 +130,12 @@ class MainFeedTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("feed"))
-        vibe = Vibe.objects.get(description="A text-only home feed update")
-        self.assertTrue(vibe.is_public)
-        self.assertTrue(vibe.is_text_only)
+        self.assertEqual(response.status_code, 405)
+        self.assertFalse(
+            Vibe.objects.filter(
+                description="A text-only home feed update"
+            ).exists()
+        )
 
     def test_feed_renders_open_vibe_and_revibe_controls_for_text_updates(self):
         vibe = Vibe.objects.create(
