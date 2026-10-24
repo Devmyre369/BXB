@@ -149,6 +149,16 @@
         font-style: italic;
     }
 
+    .vibe-detail-text {
+        padding: 32px 24px;
+        color: var(--vd-caption-text);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
     .vibe-extra-content {
         padding: 0 20px 20px;
         color: var(--vd-caption-text);
@@ -493,16 +503,18 @@
         <article class="vibe-detail-card">
 
             <div class="vibe-detail-media">
-                {% if vibe.is_video %}
+                {% if vibe.media and vibe.is_video %}
                     <video controls playsinline preload="metadata">
                         <source src="{{ vibe.media.url }}">
                         Your browser does not support video playback.
                     </video>
-                {% else %}
+                {% elif vibe.media %}
                     <img
                         src="{{ vibe.media.url }}"
                         alt="Vibe shared by {{ vibe.author.username }}"
                     >
+                {% else %}
+                    <div class="vibe-detail-text">Text update</div>
                 {% endif %}
             </div>
 

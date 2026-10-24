@@ -8,7 +8,6 @@ from vibespace.models import Vibe, VibeLike, VibeRepost
 from vibespace.forms import VibeCreateForm
 from vibespace.models import Vibe, VibeLike, VibeRepost
 
-from .forms import PostForm
 from .models import (
     Comment,
     Post,
@@ -20,22 +19,6 @@ from .models import (
 
 @login_required
 def feed(request):
-    form = PostForm()
-    posts = (
-        Post.objects
-        .select_related(
-            "author",
-            "author__profile"
-        )
-        .prefetch_related(
-            "likes",
-            "comments__user",
-            "comments__user__profile",
-            "reposts",
-            "saves",
-        )
-        .order_by("-created_at")
-    )
     vibes = (
         Vibe.objects
         .filter(is_public=True)
@@ -67,66 +50,30 @@ def feed(request):
         ).values_list("following_id", flat=True)
     )
     feed_items = [
-        {"type": "post", "object": post}
-        for post in posts
-    ]
-    reposted_post_ids = {
-        post.pk
-        for post in posts
-        if any(
-            repost.user_id == request.user.pk
-            for repost in post.reposts.all()
-        )
-    }
-    feed_items.extend(
         {"type": "vibe", "object": vibe}
         for vibe in vibes
-    )
-    feed_items.sort(
-        key=lambda item: item["object"].created_at,
-        reverse=True,
-    )
+    ]
 
     vibe_form = VibeCreateForm()
 
     if request.method == "POST":
-        content_type = request.POST.get("content_type", "post")
+        vibe_form = VibeCreateForm(request.POST)
 
-        if content_type == "vibe":
-            vibe_form = VibeCreateForm(
-                request.POST,
-                request.FILES,
-            )
-
-            if vibe_form.is_valid():
-                vibe = vibe_form.save(commit=False)
-                vibe.author = request.user
-                vibe.save()
-                vibe_form.save_tags(vibe)
-                return redirect("feed")
-
-        else:
-            form = PostForm(
-                request.POST,
-            )
-
-            if form.is_valid():
-                post = form.save(commit=False)
-                post.author = request.user
-                post.save()
-                return redirect("feed")
+        if vibe_form.is_valid():
+            vibe = vibe_form.save(commit=False)
+            vibe.author = request.user
+            vibe.save()
+            vibe_form.save_tags(vibe)
+            return redirect("feed")
 
     return render(
         request,
         "posts/feed.html",
         {
-            "posts": posts,
             "feed_items": feed_items,
             "liked_vibe_ids": liked_vibe_ids,
             "reposted_vibe_ids": reposted_vibe_ids,
-            "reposted_post_ids": reposted_post_ids,
             "following_creator_ids": following_creator_ids,
-            "form": form,
             "vibe_form": vibe_form,
         }
     )

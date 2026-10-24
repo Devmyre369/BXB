@@ -142,6 +142,12 @@
     outline-offset: 1px;
 }
 
+.create-post-form .form-errors {
+    margin-bottom: 10px;
+    color: var(--danger);
+    font-size: 12px;
+}
+
 .create-post-actions {
     display: flex;
     align-items: center;
@@ -986,7 +992,7 @@
                 </a>
 
                 <div class="create-post-input">
-                    Share something with the BxB community...
+                    Share a text update with the BxB community...
                 </div>
             </div>
 
@@ -995,14 +1001,24 @@
                 class="create-post-form"
             >
                 {% csrf_token %}
+                <input type="hidden" name="content_type" value="vibe">
+                <input type="hidden" name="target_audience" value="everyone">
+                <input type="hidden" name="is_public" value="true">
+
+                {% if vibe_form.non_field_errors %}
+                    <div class="form-errors">{{ vibe_form.non_field_errors }}</div>
+                {% endif %}
 
                 <div>
-                    {{ form.content }}
+                    {{ vibe_form.description }}
+                    {% if vibe_form.description.errors %}
+                        <div class="form-errors">{{ vibe_form.description.errors }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="create-post-actions">
                     <button type="submit" class="btn btn-primary">
-                        Publish
+                        Share text update
                     </button>
                 </div>
             </form>
@@ -1083,23 +1099,25 @@
                             <div class="post-content">{{ vibe.caption }}</div>
                         {% endif %}
 
-                        {% if vibe.is_video %}
-                            <video
-                                class="vibe-feed-media"
-                                controls
-                                playsinline
-                                preload="metadata"
-                            >
-                                <source src="{{ vibe.media.url }}">
-                                Your browser does not support video playback.
-                            </video>
-                        {% else %}
-                            <img
-                                class="vibe-feed-media"
-                                src="{{ vibe.media.url }}"
-                                alt="Vibe shared by {{ vibe.author.username }}"
-                                loading="lazy"
-                            >
+                        {% if vibe.media %}
+                            {% if vibe.is_video %}
+                                <video
+                                    class="vibe-feed-media"
+                                    controls
+                                    playsinline
+                                    preload="metadata"
+                                >
+                                    <source src="{{ vibe.media.url }}">
+                                    Your browser does not support video playback.
+                                </video>
+                            {% else %}
+                                <img
+                                    class="vibe-feed-media"
+                                    src="{{ vibe.media.url }}"
+                                    alt="Vibe shared by {{ vibe.author.username }}"
+                                    loading="lazy"
+                                >
+                            {% endif %}
                         {% endif %}
 
                         {% if vibe.description %}

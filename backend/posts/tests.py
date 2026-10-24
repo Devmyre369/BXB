@@ -20,10 +20,11 @@ class MainFeedTests(TestCase):
         )
         self.client.force_login(self.user)
 
-    def test_feed_merges_public_vibes_and_posts_by_creation_time(self):
-        older_post = Post.objects.create(
+    def test_feed_shows_public_vibes_but_not_regular_posts(self):
+        older_vibe = Vibe.objects.create(
             author=self.user,
-            content="An older post",
+            media="vibes/older.jpg",
+            caption="An older Vibe",
         )
         public_vibe = Vibe.objects.create(
             author=self.user,
@@ -31,9 +32,14 @@ class MainFeedTests(TestCase):
             caption="A public Vibe",
             description="A Vibe now visible in the main feed.",
         )
-        newer_post = Post.objects.create(
+        newer_vibe = Vibe.objects.create(
             author=self.user,
-            content="The newest post",
+            media="vibes/newer.jpg",
+            caption="The newest Vibe",
+        )
+        Post.objects.create(
+            author=self.user,
+            content="A regular post excluded from the feed",
         )
         Vibe.objects.create(
             author=self.user,
@@ -43,32 +49,33 @@ class MainFeedTests(TestCase):
         )
 
         now = timezone.now()
-        Post.objects.filter(pk=older_post.pk).update(
+        Vibe.objects.filter(pk=older_vibe.pk).update(
             created_at=now - timedelta(days=3)
         )
         Vibe.objects.filter(pk=public_vibe.pk).update(
             created_at=now - timedelta(days=2)
         )
-        Post.objects.filter(pk=newer_post.pk).update(
+        Vibe.objects.filter(pk=newer_vibe.pk).update(
             created_at=now - timedelta(days=1)
         )
 
         response = self.client.get(reverse("feed"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "The newest post")
+        self.assertContains(response, "The newest Vibe")
         self.assertContains(response, "A public Vibe")
         self.assertContains(response, "A Vibe now visible in the main feed.")
         self.assertNotContains(response, "A private Vibe")
+        self.assertNotContains(response, "A regular post excluded from the feed")
         self.assertEqual(
             [
                 (item["type"], item["object"].pk)
                 for item in response.context["feed_items"]
             ],
             [
-                ("post", newer_post.pk),
+                ("vibe", newer_vibe.pk),
                 ("vibe", public_vibe.pk),
-                ("post", older_post.pk),
+                ("vibe", older_vibe.pk),
             ],
         )
 
@@ -85,29 +92,36 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "Only a Vibe")
         self.assertNotContains(response, "Your community starts here.")
 
-    def test_home_feed_composer_only_offers_text_posts(self):
+    def test_home_feed_composer_only_offers_text_updates(self):
         response = self.client.get(reverse("feed"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Share something with the BxB community")
-        self.assertContains(response, "Publish")
+        self.assertContains(response, "Share a text update with the BxB community")
+        self.assertContains(response, "Share text update")
         self.assertNotContains(response, "Add image")
         self.assertNotContains(response, 'type="file"')
+        self.assertContains(response, 'name="content_type" value="vibe"')
 
-    def test_home_feed_publishes_text_only_posts(self):
+    def test_home_feed_publishes_text_only_vibes(self):
         response = self.client.post(
             reverse("feed"),
-            {"content": "A text-only home feed post"},
+            {
+                "content_type": "vibe",
+                "description": "A text-only home feed update",
+                "target_audience": "everyone",
+                "is_public": "true",
+            },
         )
 
         self.assertRedirects(response, reverse("feed"))
-        post = Post.objects.get(content="A text-only home feed post")
-        self.assertFalse(post.image)
+        vibe = Vibe.objects.get(description="A text-only home feed update")
+        self.assertTrue(vibe.is_public)
+        self.assertTrue(vibe.is_text_only)
 
-    def test_feed_renders_open_vibe_and_revibe_controls_for_text_posts(self):
-        post = Post.objects.create(
+    def test_feed_renders_open_vibe_and_revibe_controls_for_text_updates(self):
+        vibe = Vibe.objects.create(
             author=self.user,
-            content="A text-only post",
+            description="A text-only Vibe",
         )
 
         response = self.client.get(reverse("feed"))
@@ -115,27 +129,27 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "Open Vibe")
         self.assertContains(
             response,
-            reverse("post_detail", args=[post.pk]),
+            reverse("vibespace:detail", args=[vibe.pk]),
         )
         self.assertContains(response, "Revibe")
         self.assertContains(
             response,
-            reverse("repost_post", args=[post.pk]),
+            reverse("vibespace:revibe", args=[vibe.pk]),
         )
 
-    def test_open_vibe_displays_post_details(self):
-        post = Post.objects.create(
+    def test_open_vibe_displays_text_update_details(self):
+        vibe = Vibe.objects.create(
             author=self.user,
-            content="The full text of this Vibe",
+            description="The full text of this Vibe",
         )
 
         response = self.client.get(
-            reverse("post_detail", args=[post.pk]),
+            reverse("vibespace:detail", args=[vibe.pk]),
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "The full text of this Vibe")
-        self.assertContains(response, "Back to feed")
+        self.assertContains(response, "Text update")
 
     def test_post_revibe_toggles_and_returns_count_for_feed(self):
         post = Post.objects.create(
