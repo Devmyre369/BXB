@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from notifications.models import Notification
 from profiles.models import Follow
 from vibespace.models import Vibe, VibeLike, VibeRepost
+from vibespace.forms import VibeCreateForm
+from vibespace.models import Vibe, VibeLike, VibeRepost
 
 from .forms import PostForm
 from .models import (
@@ -79,24 +81,36 @@ def feed(request):
 
     if request.method == "POST":
 
-        form = PostForm(
-            request.POST,
-            request.FILES
-        )
+            form = PostForm()
+    vibe_form = VibeCreateForm()
 
-        if form.is_valid():
+    if request.method == "POST":
+        content_type = request.POST.get("content_type", "post")
 
-            post = form.save(commit=False)
+        if content_type == "vibe":
+            vibe_form = VibeCreateForm(
+                request.POST,
+                request.FILES,
+            )
 
-            post.author = request.user
+            if vibe_form.is_valid():
+                vibe = vibe_form.save(commit=False)
+                vibe.author = request.user
+                vibe.save()
+                vibe_form.save_tags(vibe)
+                return redirect("feed")
 
-            post.save()
+        else:
+            form = PostForm(
+                request.POST,
+                request.FILES,
+            )
 
-            return redirect("feed")
-
-    else:
-
-        form = PostForm()
+            if form.is_valid():
+                post = form.save(commit=False)
+                post.author = request.user
+                post.save()
+                return redirect("feed")
 
     return render(
         request,
@@ -108,9 +122,9 @@ def feed(request):
             "reposted_vibe_ids": reposted_vibe_ids,
             "following_creator_ids": following_creator_ids,
             "form": form,
+            "vibe_form": vibe_form,
         }
     )
-
 
 @login_required
 def delete_post(request, post_id):
