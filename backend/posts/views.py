@@ -2,12 +2,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from notifications.models import Notification
 from profiles.models import Follow
 from vibespace.models import Vibe, VibeLike, VibeRepost
 from vibespace.forms import VibeCreateForm
 from vibespace.models import Vibe, VibeLike, VibeRepost
-
+from notifications.models import Notification
 from .models import (
     Comment,
     Post,
@@ -145,17 +144,6 @@ def like_post(request, post_id):
 
         is_liked = True
 
-        # Don't notify users about their own likes.
-        if post.author != request.user:
-
-            Notification.objects.create(
-                recipient=post.author,
-                actor=request.user,
-                notification_type=Notification.NotificationType.LIKE,
-                post=post,
-                message="liked your post."
-            )
-
     like_count = PostLike.objects.filter(
         post=post
     ).count()
@@ -262,19 +250,6 @@ def comment_post(request, post_id):
         content=content
     )
 
-    # Notify the post author.
-    # Don't notify someone about their own comment.
-    if post.author != request.user:
-
-        Notification.objects.create(
-            recipient=post.author,
-            actor=request.user,
-            notification_type=Notification.NotificationType.COMMENT,
-            post=post,
-            comment=comment,
-            message="commented on your post."
-        )
-
     comment_count = Comment.objects.filter(
         post=post
     ).count()
@@ -326,17 +301,6 @@ def repost_post(request, post_id):
     else:
 
         is_reposted = True
-
-        # Don't notify users about their own repost.
-        if post.author != request.user:
-
-            Notification.objects.create(
-                recipient=post.author,
-                actor=request.user,
-                notification_type=Notification.NotificationType.REPOST,
-                post=post,
-                message="reposted your post."
-            )
 
     repost_count = Repost.objects.filter(
         original_post=post

@@ -373,18 +373,9 @@ from django.views.decorators.http import require_http_methods
 
 from users.models import User
 from notifications.models import Notification
+from notifications.services import notify
 
 from .models import Handshake, HandshakeImage
-
-from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-
-from users.models import User
-from notifications.models import Notification
-
-from .models import Handshake
 
 
 def json_error(message, status=400, **extra):
@@ -608,7 +599,7 @@ def send_handshake(request, username):
                 image=image,
             )
 
-        Notification.objects.create(
+        notify(
             recipient=receiver,
             actor=request.user,
             notification_type=Notification.NotificationType.HANDSHAKE_RECEIVED,
@@ -675,7 +666,7 @@ def accept_handshake(request, handshake_id):
             status=Handshake.Status.PENDING,
         ).delete()
 
-        Notification.objects.create(
+        notify(
             recipient=handshake.sender,
             actor=request.user,
             notification_type=Notification.NotificationType.HANDSHAKE_ACCEPTED,

@@ -96,13 +96,10 @@ class VibeCreateForm(forms.ModelForm):
 
     def clean_description(self):
         description = self.cleaned_data.get("description", "").strip()
-        media = self.cleaned_data.get("media")
-        caption = self.cleaned_data.get("caption", "").strip()
 
-        # Require content, but allow text-only or media-only Vibes.
-        if not media and not description and not caption:
+        if not description and not self.instance.pk:
             raise forms.ValidationError(
-                "Write something or upload an image, GIF, or video."
+                "Add a description for your Vibe."
             )
 
         return description
