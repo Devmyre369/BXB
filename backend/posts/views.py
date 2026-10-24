@@ -1,9 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET
 
+from notifications.models import Notification
 from profiles.models import Follow
+from vibespace.models import Vibe, VibeLike, VibeRepost
+from vibespace.forms import VibeCreateForm
 from vibespace.models import Vibe, VibeLike, VibeRepost
 from notifications.models import Notification
 from .models import (
@@ -16,26 +18,7 @@ from .models import (
 
 
 @login_required
-@require_GET
 def feed(request):
-    user = request.user
-    return render(
-        request,
-        "posts/home.html",
-        {
-            "profile_stats": {
-                "posts": user.posts.count(),
-                "followers": user.followers.count(),
-                "following": user.following.count(),
-            },
-        },
-    )
-
-
-@login_required
-@require_GET
-def community_feed(request):
-    user = request.user
     vibes = (
         Vibe.objects
         .filter(is_public=True)
@@ -71,6 +54,18 @@ def community_feed(request):
         for vibe in vibes
     ]
 
+    vibe_form = VibeCreateForm()
+
+    if request.method == "POST":
+        vibe_form = VibeCreateForm(request.POST)
+
+        if vibe_form.is_valid():
+            vibe = vibe_form.save(commit=False)
+            vibe.author = request.user
+            vibe.save()
+            vibe_form.save_tags(vibe)
+            return redirect("feed")
+
     return render(
         request,
         "posts/feed.html",
@@ -79,11 +74,7 @@ def community_feed(request):
             "liked_vibe_ids": liked_vibe_ids,
             "reposted_vibe_ids": reposted_vibe_ids,
             "following_creator_ids": following_creator_ids,
-            "profile_stats": {
-                "posts": user.posts.count(),
-                "followers": user.followers.count(),
-                "following": user.following.count(),
-            },
+            "vibe_form": vibe_form,
         }
     )
 
@@ -114,12 +105,12 @@ def delete_post(request, post_id):
     )
 
     if post.author != request.user:
-        return redirect("community_feed")
+        return redirect("feed")
 
     if request.method == "POST":
         post.delete()
 
-    return redirect("community_feed")
+    return redirect("feed")
 
 
 @login_required
@@ -154,9 +145,23 @@ def like_post(request, post_id):
 
         is_liked = True
 
+        # Don't notify users about their own likes.
+        '''
+        if post.author != request.user:
+
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                notification_type=Notification.NotificationType.LIKE,
+                post=post,
+                message="liked your post."
+            )
+            '''
+
     like_count = PostLike.objects.filter(
         post=post
     ).count()
+    
 
     return JsonResponse(
         {
@@ -260,6 +265,22 @@ def comment_post(request, post_id):
         content=content
     )
 
+    # Notify the post author.
+    # Don't notify someone about their own comment.
+    '''
+    if post.author != request.user:
+
+        Notification.objects.create(
+            recipient=post.author,
+            actor=request.user,
+            notification_type=Notification.NotificationType.COMMENT,
+            post=post,
+            comment=comment,
+            message="commented on your post."
+        )
+        '''
+     # The comment notification is created by notifications.signals.
+
     comment_count = Comment.objects.filter(
         post=post
     ).count()
@@ -311,6 +332,22 @@ def repost_post(request, post_id):
     else:
 
         is_reposted = True
+
+        # Don't notify users about their own repost.
+        '''
+        if post.author != request.user:
+
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                notification_type=Notification.NotificationType.REPOST,
+                post=post,
+                message="reposted your post."
+            )
+            '''
+        is_reposted = True
+
+        # Notifications are created by notifications.signals.
 
     repost_count = Repost.objects.filter(
         original_post=post
