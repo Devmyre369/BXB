@@ -100,7 +100,6 @@ class Vibe(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-    
     @property
     def is_video(self):
         return bool(
