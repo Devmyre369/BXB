@@ -18,15 +18,13 @@ from .models import (
 )
 
 
+
+
 @login_required
 def feed(request):
-
     posts = (
         Post.objects
-        .select_related(
-            "author",
-            "author__profile"
-        )
+        .select_related("author", "author__profile")
         .prefetch_related(
             "likes",
             "comments__user",
@@ -36,6 +34,7 @@ def feed(request):
         )
         .order_by("-created_at")
     )
+
     vibes = (
         Vibe.objects
         .filter(is_public=True)
@@ -43,74 +42,65 @@ def feed(request):
         .prefetch_related(
             "tags",
             "likes",
+            "comments__user",
             "comments__user__profile",
             "reposts",
         )
         .order_by("-created_at")
     )
+
     liked_vibe_ids = set(
         VibeLike.objects.filter(
             vibe__in=vibes,
             user=request.user,
         ).values_list("vibe_id", flat=True)
     )
+
     reposted_vibe_ids = set(
         VibeRepost.objects.filter(
             vibe__in=vibes,
             user=request.user,
         ).values_list("vibe_id", flat=True)
     )
+
     following_creator_ids = set(
         Follow.objects.filter(
             follower=request.user,
             following__vibes__in=vibes,
         ).values_list("following_id", flat=True)
     )
+
+    # Keep historical Posts visible while new publishing uses Vibes only.
     feed_items = [
         {"type": "post", "object": post}
         for post in posts
     ]
+
     feed_items.extend(
         {"type": "vibe", "object": vibe}
         for vibe in vibes
     )
+
     feed_items.sort(
         key=lambda item: item["object"].created_at,
         reverse=True,
     )
 
-    if request.method == "POST":
-
-            form = PostForm()
     vibe_form = VibeCreateForm()
 
     if request.method == "POST":
-        content_type = request.POST.get("content_type", "post")
+        vibe_form = VibeCreateForm(
+            request.POST,
+            request.FILES,
+        )
 
-        if content_type == "vibe":
-            vibe_form = VibeCreateForm(
-                request.POST,
-                request.FILES,
-            )
+        if vibe_form.is_valid():
+            vibe = vibe_form.save(commit=False)
+            vibe.author = request.user
+            vibe.save()
+            vibe_form.save_tags(vibe)
 
-            if vibe_form.is_valid():
-                vibe = vibe_form.save(commit=False)
-                vibe.author = request.user
-                vibe.save()
-                vibe_form.save_tags(vibe)
-                return redirect("feed")
-
-        else:
-            form = PostForm(
-                request.POST,
-                request.FILES,
-            )
-
-            if form.is_valid():
-                post = form.save(commit=False)
-                post.author = request.user
-                post.save()
-                return redirect("feed")
+            return redirect("feed")
 
     return render(
         request,
@@ -121,14 +111,14 @@ def feed(request):
             "liked_vibe_ids": liked_vibe_ids,
             "reposted_vibe_ids": reposted_vibe_ids,
             "following_creator_ids": following_creator_ids,
-            "form": form,
             "vibe_form": vibe_form,
-        }
+        },
     )
+
+
 
 @login_required
 def delete_post(request, post_id):
-
     post = get_object_or_404(
         Post,
         id=post_id
@@ -141,6 +131,7 @@ def delete_post(request, post_id):
         post.delete()
 
     return redirect("feed")
+
 
 
 @login_required

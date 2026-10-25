@@ -1,9 +1,9 @@
-
 {% extends "base.html" %}
 
 {% block title %}{% if is_edit %}Edit{% else %}Create{% endif %} a Vibe | BxB{% endblock %}
 
 {% block extra_css %}
+
 <style>
 :root {
     --vibe-text: #0f172a;
@@ -84,6 +84,7 @@
     background: rgba(59,130,246,.04);
     box-sizing: border-box;
 }
+.vibe-dropzone[hidden] { display: none; }
 .vibe-dropzone.dragging {
     border-color: var(--vibe-accent);
     background: rgba(59,130,246,.12);
@@ -225,6 +226,18 @@
 }
 .vibe-tip strong { display: block; margin-bottom: 5px; font-size: 13px; }
 .vibe-tip p { color: var(--vibe-muted); font-size: 12px; line-height: 1.6; }
+
+.vibe-type-picker { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:18px 0 22px; }
+.vibe-type-option { display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-width:0; padding:16px 13px; border:1px solid var(--vibe-border); border-radius:14px; background:var(--vibe-input); color:var(--vibe-text); text-align:left; cursor:pointer; transition:border-color .18s, background .18s, transform .18s; }
+.vibe-type-option:hover { border-color:var(--vibe-accent); transform:translateY(-1px); }
+.vibe-type-option[aria-pressed="true"] { border-color:var(--vibe-accent); background:rgba(59,130,246,.12); box-shadow:0 0 0 2px rgba(59,130,246,.10); }
+.vibe-type-symbol { display:grid; place-items:center; width:38px; height:38px; border-radius:11px; background:rgba(59,130,246,.12); color:var(--vibe-accent); font-size:21px; }
+.vibe-type-option strong { font-size:13px; }
+.vibe-type-option small { color:var(--vibe-muted); font-size:11px; line-height:1.4; }
+.vibe-type-status { margin:-8px 0 16px; color:var(--vibe-muted); font-size:12px; line-height:1.5; }
+.vibe-text-type-note { padding:15px; border:1px solid var(--vibe-border); border-radius:12px; background:rgba(59,130,246,.04); color:var(--vibe-muted); font-size:13px; line-height:1.6; }
+@media (max-width:480px) { .vibe-type-picker { gap:7px; } .vibe-type-option { padding:12px 9px; } .vibe-type-option small { font-size:10px; } }
+
 @media (max-width:760px) {
     .vibe-create-page { padding: 16px 12px 50px; }
     .vibe-create-layout { grid-template-columns: 1fr; gap: 16px; }
@@ -244,15 +257,41 @@
 
     <div class="vibe-create-layout">
         <section class="vibe-panel">
-            <h2>Upload campus Vibes</h2>
-            <p class="vibe-muted">Upload your media and tell the community about it.</p>
+            <h2>{% if is_edit %}Edit your Vibe{% else %}What would you like to share?{% endif %}</h2>
+            <p class="vibe-muted">Choose a format, then create your Vibe.</p>
+
+            {% if not is_edit %}
+            <div class="vibe-type-picker" role="group" aria-label="Choose Vibe type">
+                <button type="button" class="vibe-type-option" data-vibe-type="text" aria-pressed="false">
+                    <span class="vibe-type-symbol" aria-hidden="true">T</span>
+                    <strong>Text Vibe</strong>
+                    <small>Thoughts, questions, updates</small>
+                </button>
+                <button type="button" class="vibe-type-option" data-vibe-type="image" aria-pressed="false">
+                    <span class="vibe-type-symbol" aria-hidden="true">▧</span>
+                    <strong>Image Vibe</strong>
+                    <small>Photos, artwork, GIFs</small>
+                </button>
+                <button type="button" class="vibe-type-option" data-vibe-type="video" aria-pressed="false">
+                    <span class="vibe-type-symbol" aria-hidden="true">▶</span>
+                    <strong>Video Vibe</strong>
+                    <small>Clips and moments</small>
+                </button>
+            </div>
+            <p class="vibe-type-status" id="vibe-type-status" aria-live="polite">Select a Vibe type to get started.</p>
+            {% endif %}
 
             <form method="post" enctype="multipart/form-data" id="vibe-create-form">
                 {% csrf_token %}
+                <input type="hidden" name="vibe_type" id="vibe-type-input" value="{% if is_edit %}{% if vibe.media and vibe.is_video %}video{% elif vibe.media %}image{% else %}text{% endif %}{% endif %}">
 
                 {% if form.non_field_errors %}
                     <div class="vibe-error">{{ form.non_field_errors }}</div>
                 {% endif %}
+
+                <div class="vibe-text-type-note" id="vibe-text-type-note" hidden>
+                    Text Vibes are for thoughts, questions, announcements, and updates. Write your message below; no upload is needed.
+                </div>
 
                 <div class="vibe-dropzone" id="vibe-dropzone">
                     <div class="vibe-upload-icon" aria-hidden="true">↥</div>
@@ -264,7 +303,7 @@
                         <p class="vibe-muted">Or select a file from your device</p>
                     {% endif %}
 
-                    <label for="{{ form.media.id_for_label }}" class="vibe-select-button">
+                    <label for="{{ form.media.id_for_label }}" class="vibe-select-button" id="vibe-select-label">
                         + Choose media
                     </label>
                     {{ form.media }}
@@ -303,7 +342,7 @@
                 </div>
 
                 <div class="vibe-field">
-                    <label for="{{ form.description.id_for_label }}">Describe your Vibe *</label>
+                    <label for="{{ form.description.id_for_label }}" id="vibe-description-label">Describe your Vibe</label>
                     {{ form.description }}
                     <p class="vibe-help">Tell people what's happening, what you made, or why this moment matters.</p>
                     {% if form.description.errors %}<div class="vibe-error">{{ form.description.errors }}</div>{% endif %}
@@ -399,6 +438,7 @@
 
     const fileInput = document.getElementById("{{ form.media.id_for_label }}");
     const captionInput = document.getElementById("{{ form.caption.id_for_label }}");
+    const descriptionInput = document.getElementById("{{ form.description.id_for_label }}");
     const eventCheckbox = document.getElementById("{{ form.is_campus_event.id_for_label }}");
     const eventName = document.getElementById("{{ form.campus_event_name.id_for_label }}");
     const eventWrapper = document.getElementById("campus-event-name-wrapper");
@@ -409,8 +449,14 @@
     const dropzone = document.getElementById("vibe-dropzone");
     const publishButton = document.getElementById("vibe-publish-button");
     const captionCount = document.getElementById("caption-count");
-
+    const typeInput = document.getElementById("vibe-type-input");
+    const typeStatus = document.getElementById("vibe-type-status");
+    const textNote = document.getElementById("vibe-text-type-note");
+    const descriptionLabel = document.getElementById("vibe-description-label");
+    const selectLabel = document.getElementById("vibe-select-label");
+    const typeButtons = Array.from(document.querySelectorAll("[data-vibe-type]"));
     let previewUrl = null;
+    let selectedType = typeInput.value || "";
 
     function clearPreview() {
         if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -425,8 +471,7 @@
     function showFile(file) {
         clearPreview();
         fileName.textContent = "";
-        publishButton.disabled = true;
-        if (!file) return;
+        if (!file) { updatePublishState(); return; }
 
         const extension = file.name.split(".").pop().toLowerCase();
         const imageExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
@@ -434,9 +479,17 @@
         const isImage = imageExtensions.includes(extension);
         const isVideo = videoExtensions.includes(extension);
 
-        if (!isImage && !isVideo) {
-            fileName.textContent = "Unsupported file type.";
+        if ((selectedType === "image" && !isImage) ||
+            (selectedType === "video" && !isVideo) ||
+            (selectedType === "text") ||
+            (!isImage && !isVideo)) {
+            fileName.textContent = selectedType === "video"
+                ? "Choose a supported video file."
+                : selectedType === "image"
+                    ? "Choose an image or GIF file."
+                    : "This file doesn't match the selected Vibe type.";
             fileInput.value = "";
+            updatePublishState();
             return;
         }
 
@@ -446,13 +499,13 @@
                 ? "Video exceeds the 200 MB limit."
                 : "Image/GIF exceeds the 10 MB limit.";
             fileInput.value = "";
+            updatePublishState();
             return;
         }
 
         fileName.textContent = file.name;
         previewUrl = URL.createObjectURL(file);
         preview.hidden = false;
-
         if (isImage) {
             previewImage.src = previewUrl;
             previewImage.hidden = false;
@@ -460,7 +513,52 @@
             previewVideo.src = previewUrl;
             previewVideo.hidden = false;
         }
-        publishButton.disabled = false;
+        updatePublishState();
+    }
+
+    function updatePublishState() {
+        if (!publishButton || {{ is_edit|yesno:"true,false" }}) return;
+        const hasText = Boolean((descriptionInput.value || "").trim() || (captionInput.value || "").trim());
+        const hasFile = Boolean(fileInput.files && fileInput.files.length);
+        publishButton.disabled = !selectedType ||
+            (selectedType === "text" ? !hasText : !hasFile);
+    }
+
+    function selectType(type) {
+        selectedType = type;
+        typeInput.value = type;
+        typeButtons.forEach(function (button) {
+            button.setAttribute("aria-pressed", button.dataset.vibeType === type ? "true" : "false");
+        });
+
+        const isText = type === "text";
+        const isImage = type === "image";
+        if (dropzone) dropzone.hidden = isText;
+        if (textNote) textNote.hidden = !isText;
+        if (fileInput) {
+            fileInput.accept = isImage
+                ? ".jpg,.jpeg,.png,.webp,.gif,image/*"
+                : type === "video"
+                    ? ".mp4,.webm,.mov,.m4v,video/*"
+                    : ".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.m4v";
+        }
+        if (selectLabel) selectLabel.textContent = isImage ? "+ Choose image or GIF" : "+ Choose video";
+        if (descriptionLabel) descriptionLabel.textContent = isText ? "Your text Vibe *" : "Describe your Vibe";
+        if (typeStatus) {
+            typeStatus.textContent = isText
+                ? "Text Vibe selected — write your message below."
+                : isImage
+                    ? "Image Vibe selected — upload a photo, graphic, or GIF."
+                    : "Video Vibe selected — upload a video clip.";
+        }
+        if (fileInput.files.length && type === "text") {
+            fileInput.value = "";
+            clearPreview();
+            fileName.textContent = "";
+        } else if (fileInput.files.length) {
+            showFile(fileInput.files[0]);
+        }
+        updatePublishState();
     }
 
     function updateEventFields() {
@@ -470,48 +568,58 @@
         if (!enabled) eventName.value = "";
     }
 
-    fileInput.addEventListener("change", function () {
-        showFile(fileInput.files[0]);
-    });
-
+    fileInput.addEventListener("change", function () { showFile(fileInput.files[0]); });
     captionInput.addEventListener("input", function () {
         captionCount.textContent = captionInput.value.length;
+        updatePublishState();
     });
-
+    descriptionInput.addEventListener("input", updatePublishState);
     eventCheckbox.addEventListener("change", updateEventFields);
 
-    ["dragenter", "dragover"].forEach(function (name) {
-        dropzone.addEventListener(name, function (event) {
-            event.preventDefault();
-            dropzone.classList.add("dragging");
+    if (dropzone) {
+        ["dragenter", "dragover"].forEach(function (name) {
+            dropzone.addEventListener(name, function (event) {
+                event.preventDefault();
+                dropzone.classList.add("dragging");
+            });
         });
-    });
-
-    ["dragleave", "drop"].forEach(function (name) {
-        dropzone.addEventListener(name, function (event) {
-            event.preventDefault();
-            dropzone.classList.remove("dragging");
+        ["dragleave", "drop"].forEach(function (name) {
+            dropzone.addEventListener(name, function (event) {
+                event.preventDefault();
+                dropzone.classList.remove("dragging");
+            });
         });
-    });
-
-    dropzone.addEventListener("drop", function (event) {
-        const files = event.dataTransfer.files;
-        if (!files.length) return;
-        try {
-            const transfer = new DataTransfer();
-            transfer.items.add(files[0]);
-            fileInput.files = transfer.files;
-            showFile(files[0]);
-        } catch (error) {
-            fileName.textContent = "Please use Choose media to select your file.";
-        }
-    });
+        dropzone.addEventListener("drop", function (event) {
+            const files = event.dataTransfer.files;
+            if (!files.length) return;
+            try {
+                const transfer = new DataTransfer();
+                transfer.items.add(files[0]);
+                fileInput.files = transfer.files;
+                showFile(files[0]);
+            } catch (error) {
+                fileName.textContent = "Please use Choose media to select your file.";
+            }
+        });
+    }
 
     form.addEventListener("submit", function (event) {
-        if (!fileInput.files.length && !{{ is_edit|yesno:"true,false" }} ) {
-            event.preventDefault();
-            fileName.textContent = "Choose a file before publishing.";
-            return;
+        if (!{{ is_edit|yesno:"true,false" }}) {
+            if (!selectedType) {
+                event.preventDefault();
+                if (typeStatus) typeStatus.textContent = "Please choose Text, Image, or Video Vibe first.";
+                return;
+            }
+            if (selectedType === "text" && !(descriptionInput.value || "").trim() && !(captionInput.value || "").trim()) {
+                event.preventDefault();
+                descriptionInput.focus();
+                return;
+            }
+            if (selectedType !== "text" && !fileInput.files.length) {
+                event.preventDefault();
+                fileName.textContent = "Choose a file before publishing.";
+                return;
+            }
         }
         if (eventCheckbox.checked && !eventName.value.trim()) {
             event.preventDefault();
@@ -522,10 +630,25 @@
         publishButton.textContent = "Publishing…";
     });
 
+    typeButtons.forEach(function (button) {
+        button.addEventListener("click", function () { selectType(button.dataset.vibeType); });
+    });
+
     captionCount.textContent = captionInput.value.length;
     updateEventFields();
-    if (fileInput.files.length) showFile(fileInput.files[0]);
 
+    if ({{ is_edit|yesno:"true,false" }}) {
+        if (selectedType) {
+            if (dropzone) dropzone.hidden = selectedType === "text";
+            if (textNote) textNote.hidden = selectedType !== "text";
+            if (selectedType === "image") fileInput.accept = ".jpg,.jpeg,.png,.webp,.gif,image/*";
+            if (selectedType === "video") fileInput.accept = ".mp4,.webm,.mov,.m4v,video/*";
+        }
+    } else {
+        dropzone.hidden = true;
+        textNote.hidden = true;
+    }
+    updatePublishState();
     window.addEventListener("beforeunload", clearPreview);
 })();
 </script>

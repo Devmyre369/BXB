@@ -1,3 +1,4 @@
+
 from django import forms
 from django.utils.text import slugify
 
@@ -37,21 +38,24 @@ class VibeCreateForm(forms.ModelForm):
                     "accept": (
                         "image/jpeg,image/png,image/webp,"
                         "image/gif,video/mp4,video/webm,"
-                        "video/quicktime"
+                        "video/quicktime,video/x-m4v"
                     ),
                     "class": "vibe-file-input",
                 }
             ),
             "caption": forms.TextInput(
                 attrs={
-                    "placeholder": "Give your Vibe a short caption",
+                    "placeholder": "Write a caption or a text Vibe...",
                     "maxlength": 500,
                     "class": "vibe-caption-input",
                 }
             ),
             "description": forms.Textarea(
                 attrs={
-                    "placeholder": "Describe your Vibe. What should people know?",
+                    "placeholder": (
+                        "Share your thoughts, a story, a meme caption, "
+                        "or the context behind your media..."
+                    ),
                     "rows": 4,
                     "maxlength": 1500,
                     "class": "vibe-caption-input",
@@ -77,8 +81,12 @@ class VibeCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Media is optional for new text-only Vibes.
+        self.fields["media"].required = False
+
         if not self.instance.pk:
-            self.fields["description"].widget.attrs["required"] = True
+            self.fields["description"].required = False
         elif "tag_names" not in self.initial:
             self.initial["tag_names"] = ", ".join(
                 self.instance.tags.values_list("name", flat=True)
@@ -86,22 +94,22 @@ class VibeCreateForm(forms.ModelForm):
 
     def clean_media(self):
         media = self.cleaned_data.get("media")
-        if not media:
-            raise forms.ValidationError(
-                "Please select an image, GIF, or video."
-            )
+
+        # Existing media can be retained when editing.
+        if not media and not self.instance.pk:
+            return None
+
         return media
 
+    def clean_caption(self):
+        return self.cleaned_data.get("caption", "").strip()
+
     def clean_description(self):
-        description = self.cleaned_data.get("description", "").strip()
-        if not description and not self.instance.pk:
-            raise forms.ValidationError(
-                "Please describe your Vibe before publishing."
-            )
-        return description
+        return self.cleaned_data.get("description", "").strip()
 
     def clean_tag_names(self):
         raw_tags = self.cleaned_data.get("tag_names", "")
+
         for raw_tag in raw_tags.split(","):
             name = raw_tag.strip().lstrip("#").strip()
             if name and len(name) > 40:
@@ -109,12 +117,31 @@ class VibeCreateForm(forms.ModelForm):
                     f"Tag '{name[:40]}…' is too long. "
                     "Each tag must be at most 40 characters."
                 )
+
         return raw_tags
 
     def clean(self):
         cleaned_data = super().clean()
+
+        media = cleaned_data.get("media")
+        caption = cleaned_data.get("caption", "")
+        description = cleaned_data.get("description", "")
         is_campus_event = cleaned_data.get("is_campus_event")
         campus_event_name = cleaned_data.get("campus_event_name", "")
+
+        # A new Vibe must contain media or text.
+        # An existing Vibe may retain its already-saved media.
+        has_existing_media = bool(
+            self.instance.pk and self.instance.media
+        )
+        has_media = bool(media) or has_existing_media
+        has_text = bool(caption or description)
+
+        if not has_media and not has_text:
+            raise forms.ValidationError(
+                "Write something or upload an image, GIF, or video "
+                "before publishing."
+            )
 
         if not is_campus_event:
             cleaned_data["campus_event_name"] = ""
@@ -128,8 +155,10 @@ class VibeCreateForm(forms.ModelForm):
 
     def save(self, commit=True):
         vibe = super().save(commit=commit)
+
         if commit:
             self.save_tags(vibe)
+
         return vibe
 
     def save_tags(self, vibe):
@@ -139,6 +168,7 @@ class VibeCreateForm(forms.ModelForm):
         for raw_tag in self.cleaned_data.get("tag_names", "").split(","):
             name = raw_tag.strip().lstrip("#").strip()
             slug = slugify(name)
+
             if not name or not slug or slug in seen:
                 continue
 

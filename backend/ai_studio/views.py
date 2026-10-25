@@ -1,8 +1,15 @@
-from django.shortcuts import render
 
-# Create your views here.
+import os
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+
+
+# Read the deployed service URL from the environment.
+# When it is absent, Resume Builder remains marked as unavailable.
+RESUME_BUILDER_URL = (
+    os.environ.get("RESUME_BUILDER_URL", "").strip().rstrip("/")
+)
 
 
 AI_TOOLS = [
@@ -11,7 +18,7 @@ AI_TOOLS = [
         "name": "AI Chat Assistant",
         "category": "Productivity",
         "category_slug": "productivity",
-        "icon": "✦",
+        "icon": "\u2726",
         "description": "Ask questions, brainstorm ideas and explore concepts.",
         "available": False,
     },
@@ -29,7 +36,7 @@ AI_TOOLS = [
         "name": "Study Assistant",
         "category": "Education",
         "category_slug": "education",
-        "icon": "📚",
+        "icon": "\U0001F4DA",
         "description": "Learn complex topics through clear, structured explanations.",
         "available": False,
     },
@@ -38,34 +45,7 @@ AI_TOOLS = [
         "name": "Notes Generator",
         "category": "Education",
         "category_slug": "education",
-        "icon": "📝",
-        "description": "Turn study material into organized revision notes.",
-        "available": False,
-    },
-    {
-        "slug": "quiz-generator",
-        "name": "Quiz & Flashcard Generator",
-        "category": "Education",
-        "category_slug": "education",
-        "icon": "🎯",
-        "description": "Create practice questions and flashcards for revision.",
-        "available": False,
-    },
-    {
-        "slug": "pdf-summarizer",
-        "name": "PDF Summarizer",
-        "category": "Research",
-        "category_slug": "research",
-        "icon": "📄",
-        "description": "Summarize long documents into useful takeaways.",
-        "available": False,
-    },
-    {
-        "slug": "ai-writer",
-        "name": "AI Writer",
-        "category": "Writing",
-        "category_slug": "writing",
-        "icon": "✍️",
+        "icon": "\U0001F4DD",
         "description": "Draft, rewrite and improve emails, posts and documents.",
         "available": False,
     },
@@ -74,16 +54,17 @@ AI_TOOLS = [
         "name": "Resume Builder",
         "category": "Career",
         "category_slug": "career",
-        "icon": "💼",
+        "icon": "\U0001F4BC",
         "description": "Create and improve resumes for internships and jobs.",
-        "available": False,
+        "available": bool(RESUME_BUILDER_URL),
+        "url": RESUME_BUILDER_URL,
     },
     {
         "slug": "research-assistant",
         "name": "Research Assistant",
         "category": "Research",
         "category_slug": "research",
-        "icon": "🔬",
+        "icon": "\U0001F52C",
         "description": "Organize research ideas and explore technical topics.",
         "available": False,
     },
@@ -92,7 +73,7 @@ AI_TOOLS = [
         "name": "AI Image Studio",
         "category": "Creative",
         "category_slug": "creative",
-        "icon": "🎨",
+        "icon": "\U0001F3A8",
         "description": "Create visual assets from text prompts.",
         "available": False,
     },

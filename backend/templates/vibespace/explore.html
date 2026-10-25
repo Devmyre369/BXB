@@ -495,19 +495,26 @@
                    class="vibe-card-media-link"
                    aria-label="Open Vibe by {{ vibe.author.username }}">
 
-                    {% if vibe.is_video %}
-                        <video muted playsinline preload="metadata">
-                            <source src="{{ vibe.media.url }}">
-                        </video>
-                        <span class="vibe-card-media-badge">▶ VIDEO</span>
-                    {% else %}
-                        <img
-                            src="{{ vibe.media.url }}"
-                            alt="Vibe by {{ vibe.author.username }}"
-                            loading="lazy"
-                        >
-                        <span class="vibe-card-media-badge">IMAGE</span>
-                    {% endif %}
+                    {% if vibe.media %}
+    {% if vibe.is_video %}
+        <video muted playsinline preload="metadata">
+            <source src="{{ vibe.media.url }}">
+        </video>
+        <span class="vibe-card-media-badge">▶ VIDEO</span>
+    {% else %}
+        <img
+            src="{{ vibe.media.url }}"
+            alt="Vibe by {{ vibe.author.username }}"
+            loading="lazy"
+        >
+        <span class="vibe-card-media-badge">IMAGE</span>
+    {% endif %}
+{% else %}
+    <div class="vibe-card-media-placeholder">
+        <span>✦</span>
+        <span>Media unavailable</span>
+    </div>
+{% endif %}
                 </a>
 
                 <div class="vibe-card-body">

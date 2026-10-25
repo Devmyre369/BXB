@@ -493,17 +493,25 @@
         <article class="vibe-detail-card">
 
             <div class="vibe-detail-media">
-                {% if vibe.is_video %}
-                    <video controls playsinline preload="metadata">
-                        <source src="{{ vibe.media.url }}">
-                        Your browser does not support video playback.
-                    </video>
-                {% else %}
-                    <img
-                        src="{{ vibe.media.url }}"
-                        alt="Vibe shared by {{ vibe.author.username }}"
-                    >
-                {% endif %}
+                {% if vibe.media %}
+    {% if vibe.is_video %}
+        <video controls playsinline preload="metadata">
+            <source src="{{ vibe.media.url }}">
+            Your browser does not support video playback.
+        </video>
+    {% else %}
+        <img
+            src="{{ vibe.media.url }}"
+            alt="Vibe shared by {{ vibe.author.username }}"
+        >
+    {% endif %}
+{% else %}
+    <div class="vibe-detail-media-placeholder">
+        <span>✦</span>
+        <p>Media unavailable</p>
+        <p>This Vibe has no attached file.</p>
+    </div>
+{% endif %}
             </div>
 
             <div class="vibe-detail-caption">
