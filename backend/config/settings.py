@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 
+
 LOGIN_URL = "/auth/login/"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -106,3 +107,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 AUTH_USER_MODEL = "users.User"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ----------------------------------------------------------------------
+# NOTIFICATIONS
+# ----------------------------------------------------------------------
+# In-app notifications are always stored in the database. Set this to True
+# to also email users who have email turned on for a notification type.
+NOTIFICATIONS_EMAIL_ENABLED = False
+
+# Used to build links inside notification emails.
+SITE_URL = "http://localhost:8000"

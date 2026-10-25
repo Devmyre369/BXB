@@ -20,10 +20,11 @@ class MainFeedTests(TestCase):
         )
         self.client.force_login(self.user)
 
-    def test_feed_merges_public_vibes_and_posts_by_creation_time(self):
-        older_post = Post.objects.create(
+    def test_feed_shows_public_vibes_but_not_regular_posts(self):
+        older_vibe = Vibe.objects.create(
             author=self.user,
-            content="An older post",
+            media="vibes/older.jpg",
+            caption="An older Vibe",
         )
         public_vibe = Vibe.objects.create(
             author=self.user,
@@ -31,9 +32,14 @@ class MainFeedTests(TestCase):
             caption="A public Vibe",
             description="A Vibe now visible in the main feed.",
         )
-        newer_post = Post.objects.create(
+        newer_vibe = Vibe.objects.create(
             author=self.user,
-            content="The newest post",
+            media="vibes/newer.jpg",
+            caption="The newest Vibe",
+        )
+        Post.objects.create(
+            author=self.user,
+            content="A regular post excluded from the feed",
         )
         Vibe.objects.create(
             author=self.user,
@@ -43,32 +49,33 @@ class MainFeedTests(TestCase):
         )
 
         now = timezone.now()
-        Post.objects.filter(pk=older_post.pk).update(
+        Vibe.objects.filter(pk=older_vibe.pk).update(
             created_at=now - timedelta(days=3)
         )
         Vibe.objects.filter(pk=public_vibe.pk).update(
             created_at=now - timedelta(days=2)
         )
-        Post.objects.filter(pk=newer_post.pk).update(
+        Vibe.objects.filter(pk=newer_vibe.pk).update(
             created_at=now - timedelta(days=1)
         )
 
         response = self.client.get(reverse("feed"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "The newest post")
+        self.assertContains(response, "The newest Vibe")
         self.assertContains(response, "A public Vibe")
         self.assertContains(response, "A Vibe now visible in the main feed.")
         self.assertNotContains(response, "A private Vibe")
+        self.assertNotContains(response, "A regular post excluded from the feed")
         self.assertEqual(
             [
                 (item["type"], item["object"].pk)
                 for item in response.context["feed_items"]
             ],
             [
-                ("post", newer_post.pk),
+                ("vibe", newer_vibe.pk),
                 ("vibe", public_vibe.pk),
-                ("post", older_post.pk),
+                ("vibe", older_vibe.pk),
             ],
         )
 
@@ -84,6 +91,108 @@ class MainFeedTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Only a Vibe")
         self.assertNotContains(response, "Your community starts here.")
+
+    def test_home_feed_shows_profile_stats_without_post_composer(self):
+        follower = get_user_model().objects.create_user(
+            username="follower",
+            email="follower@example.com",
+            password="test-password",
+        )
+        following = get_user_model().objects.create_user(
+            username="following",
+            email="following@example.com",
+            password="test-password",
+        )
+        Follow.objects.create(follower=follower, following=self.user)
+        Follow.objects.create(follower=self.user, following=following)
+        Post.objects.create(author=self.user, content="Profile post")
+
+        response = self.client.get(reverse("feed"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Share a text update with the BxB community")
+        self.assertNotContains(response, "Share text update")
+        self.assertContains(response, "Welcome to BxB")
+        self.assertContains(response, "Your Profile")
+        self.assertEqual(
+            response.context["profile_stats"],
+            {"posts": 1, "followers": 1, "following": 1},
+        )
+
+    def test_home_feed_rejects_post_requests_without_creating_vibes(self):
+        response = self.client.post(
+            reverse("feed"),
+            {
+                "content_type": "vibe",
+                "description": "A text-only home feed update",
+                "target_audience": "everyone",
+                "is_public": "true",
+            },
+        )
+
+        self.assertEqual(response.status_code, 405)
+        self.assertFalse(
+            Vibe.objects.filter(
+                description="A text-only home feed update"
+            ).exists()
+        )
+
+    def test_feed_renders_open_vibe_and_revibe_controls_for_text_updates(self):
+        vibe = Vibe.objects.create(
+            author=self.user,
+            description="A text-only Vibe",
+        )
+
+        response = self.client.get(reverse("feed"))
+
+        self.assertContains(response, "Open Vibe")
+        self.assertContains(
+            response,
+            reverse("vibespace:detail", args=[vibe.pk]),
+        )
+        self.assertContains(response, "Revibe")
+        self.assertContains(
+            response,
+            reverse("vibespace:revibe", args=[vibe.pk]),
+        )
+
+    def test_open_vibe_displays_text_update_details(self):
+        vibe = Vibe.objects.create(
+            author=self.user,
+            description="The full text of this Vibe",
+        )
+
+        response = self.client.get(
+            reverse("vibespace:detail", args=[vibe.pk]),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "The full text of this Vibe")
+        self.assertContains(response, "Text update")
+
+    def test_post_revibe_toggles_and_returns_count_for_feed(self):
+        post = Post.objects.create(
+            author=self.user,
+            content="Revibable text post",
+        )
+        revibe_url = reverse("repost_post", args=[post.pk])
+        ajax_headers = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+
+        first_response = self.client.post(revibe_url, **ajax_headers)
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(
+            first_response.json(),
+            {"success": True, "is_reposted": True, "repost_count": 1},
+        )
+
+        second_response = self.client.post(revibe_url, **ajax_headers)
+
+        self.assertEqual(second_response.status_code, 200)
+        self.assertEqual(
+            second_response.json(),
+            {"success": True, "is_reposted": False, "repost_count": 0},
+        )
 
     def test_feed_renders_follow_control_for_vibe_creators(self):
         creator = get_user_model().objects.create_user(

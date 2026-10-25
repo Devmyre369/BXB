@@ -86,7 +86,7 @@ class VibeCreateForm(forms.ModelForm):
         self.fields["media"].required = False
 
         if not self.instance.pk:
-            self.fields["description"].required = False
+            self.fields["description"].required = True
         elif "tag_names" not in self.initial:
             self.initial["tag_names"] = ", ".join(
                 self.instance.tags.values_list("name", flat=True)
@@ -105,13 +105,21 @@ class VibeCreateForm(forms.ModelForm):
         return self.cleaned_data.get("caption", "").strip()
 
     def clean_description(self):
-        return self.cleaned_data.get("description", "").strip()
+        description = self.cleaned_data.get("description", "").strip()
+
+        if not description and not self.instance.pk:
+            raise forms.ValidationError(
+                "Add a description for your Vibe."
+            )
+
+        return description
 
     def clean_tag_names(self):
         raw_tags = self.cleaned_data.get("tag_names", "")
 
         for raw_tag in raw_tags.split(","):
             name = raw_tag.strip().lstrip("#").strip()
+
             if name and len(name) > 40:
                 raise forms.ValidationError(
                     f"Tag '{name[:40]}…' is too long. "
@@ -173,6 +181,7 @@ class VibeCreateForm(forms.ModelForm):
                 continue
 
             seen.add(slug)
+
             tag, _ = VibeTag.objects.get_or_create(
                 slug=slug,
                 defaults={"name": name.lower()},

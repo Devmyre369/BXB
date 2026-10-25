@@ -150,8 +150,6 @@
 
 }
 
-
-
 /* CREATE POST */
 
 
@@ -288,6 +286,15 @@
     padding: 11px 12px;
     border: 1px solid var(--border);
     border-radius: 10px;
+}
+
+/* POST CARD */
+
+.post-card {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 20px;
+    min-width: 0;
     color: var(--text-primary);
     background: var(--card-bg, var(--surface, transparent));
     font: inherit;
@@ -302,7 +309,113 @@
     margin-bottom: 12px;
 }
 
-.composer-field label {
+/* CLICKABLE PROFILE LINKS */
+
+.post-author-profile-link,
+.comment-profile-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.post-author-profile-link:hover,
+.comment-profile-link:hover {
+    text-decoration: none;
+}
+
+.post-author-profile-link:focus-visible,
+.comment-profile-link:focus-visible,
+.comment-avatar:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 4px;
+    border-radius: 6px;
+}
+
+.comment-user a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.comment-user a:hover {
+    color: var(--blue-light, var(--blue));
+    text-decoration: underline;
+}
+
+.profile-card-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.profile-card-user-info {
+    min-width: 0;
+}
+
+.profile-card-user-name {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.profile-card-user-name:hover {
+    color: var(--blue-light, var(--blue));
+}
+
+.profile-card-username {
+    margin-top: 3px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.profile-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.post-menu {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    background: transparent;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.post-menu:hover {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+    border-color: var(--border);
+}
+
+/* POST CONTENT */
+
+.post-content {
+    margin-top: 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.post-content a {
+    color: var(--blue-light, var(--blue));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.post-image {
     display: block;
     margin-bottom: 6px;
     color: var(--text-secondary);
@@ -1827,9 +1940,8 @@
 
 
     .feed-sidebar {
-
-        display: none;
-
+        position: static;
+        order: -1;
     }
 
 }
@@ -1867,16 +1979,6 @@
         padding: 16px;
 
     }
-
-
-
-    .create-post {
-
-        padding: 15px;
-
-    }
-
-
 
     .post-content {
 
@@ -1927,13 +2029,7 @@
 @media (prefers-reduced-motion: reduce) {
 
     .post-card,
-
-    .post-action,
-
-    .create-post-input,
-
-    .file-upload {
-
+    .post-action {
         transition: none;
 
     }
@@ -1985,8 +2081,6 @@
     </div>
 
 </div>
-
-
 
 <!-- MY PROFILE SHORTCUT -->
 
@@ -2049,127 +2143,6 @@
 
 
     <section>
-
-
-
-        <!-- UNIFIED BXB COMPOSER -->
-
-        <div class="card create-post">
-            <div class="create-post-header">
-                <a
-                    href="{% url 'my_profile' %}"
-                    class="avatar avatar-small create-post-avatar create-post-profile-link"
-                    aria-label="View your profile"
-                >
-                    {% if user.profile.avatar %}
-                        <img
-                            src="{{ user.profile.avatar.url }}"
-                            alt="{{ user.username }}'s profile"
-                        >
-                    {% else %}
-                        <span>{{ user.username|first|upper }}</span>
-                    {% endif %}
-                </a>
-
-                <div class="create-post-input">
-                    Share something with the BxB community...
-                </div>
-            </div>
-
-            <form
-                method="POST"
-                enctype="multipart/form-data"
-                class="create-post-form"
-                id="unified-composer"
-            >
-                {% csrf_token %}
-
-                {% if vibe_form.non_field_errors %}
-                    <div class="composer-errors">
-                        {{ vibe_form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                <div class="composer-field">
-                    <label for="{{ vibe_form.description.id_for_label }}">Your Vibe</label>
-                    {{ vibe_form.description }}
-                    {% for error in vibe_form.description.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="composer-field">
-                    <label for="{{ vibe_form.media.id_for_label }}">
-                        Add an image, GIF, meme, or video (optional)
-                    </label>
-                    {{ vibe_form.media }}
-                    {% for error in vibe_form.media.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                    <small class="text-muted">Text-only Vibes are welcome too.</small>
-                </div>
-
-                <div class="composer-field">
-                    <label for="{{ vibe_form.caption.id_for_label }}">Short caption (optional)</label>
-                    {{ vibe_form.caption }}
-                    {% for error in vibe_form.caption.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="composer-field">
-                    <label for="{{ vibe_form.tag_names.id_for_label }}">Tags</label>
-                    {{ vibe_form.tag_names }}
-                    {% for error in vibe_form.tag_names.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="composer-field">
-                    <label for="{{ vibe_form.target_audience.id_for_label }}">Audience</label>
-                    {{ vibe_form.target_audience }}
-                    {% for error in vibe_form.target_audience.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="composer-field">
-                    <label>
-                        {{ vibe_form.is_campus_event }}
-                        Campus event
-                    </label>
-                    {% for error in vibe_form.is_campus_event.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="composer-field">
-                    <label for="{{ vibe_form.campus_event_name.id_for_label }}">
-                        Campus event name (if applicable)
-                    </label>
-                    {{ vibe_form.campus_event_name }}
-                    {% for error in vibe_form.campus_event_name.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="composer-field">
-                    <label>
-                        {{ vibe_form.is_public }}
-                        Make this Vibe public
-                    </label>
-                    {% for error in vibe_form.is_public.errors %}
-                        <div class="composer-errors">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="create-post-actions">
-                    <span class="text-muted">One Vibe for everything you share.</span>
-                    <button type="submit" class="btn btn-primary">Publish Vibe</button>
-                </div>
-            </form>
-        </div>
-
 
         <!-- POSTS -->
 
@@ -2338,9 +2311,6 @@
                                 >
                             {% endif %}
                         {% endif %}
-
-
-
 
                         {% if vibe.description %}
 
@@ -2624,23 +2594,12 @@
 
                         </div>
 
-
-
-                        <button
-
-                            type="button"
-
-                            class="post-menu"
-
-                            title="More options"
-
-                            aria-label="More post options"
-
-                        >
-
-                            ···
-
-                        </button>
+                        <a
+                            class="post-action"
+                            href="{% url 'post_detail' post.id %}"
+                            aria-label="Open Vibe"
+                            title="Open Vibe"
+                        >Open Vibe ↗</a>
 
 
 
@@ -3182,36 +3141,56 @@
 
         </div>
 
-
-
-        <!-- COMMUNITY STATS -->
-
-
-
         <div class="card sidebar-card">
 
 
 
             <div class="sidebar-card-header">
-
-                <h3 class="sidebar-card-title">Community</h3>
-
-                <span class="sidebar-card-link">Live</span>
-
+                <h3 class="sidebar-card-title">Your Profile</h3>
+                <a href="{% url 'my_profile' %}" class="sidebar-card-link">
+                    View profile
+                </a>
             </div>
 
+            <div class="profile-card-user">
+                <a
+                    href="{% url 'my_profile' %}"
+                    class="avatar avatar-small"
+                    aria-label="View your profile"
+                >
+                    {% if user.profile.avatar %}
+                        <img
+                            src="{{ user.profile.avatar.url }}"
+                            alt="{{ user.username }}'s profile"
+                        >
+                    {% else %}
+                        <span>{{ user.username|first|upper }}</span>
+                    {% endif %}
+                </a>
 
+                <div class="profile-card-user-info">
+                    <a
+                        href="{% url 'my_profile' %}"
+                        class="profile-card-user-name"
+                    >
+                        {{ user.get_full_name|default:user.username }}
+                    </a>
+                    <div class="profile-card-username">@{{ user.username }}</div>
+                </div>
+            </div>
 
-            <div class="stats-grid">
-
-
-
+            <div class="stats-grid profile-stats-grid">
                 <div class="stat-box">
-
-                    <div class="stat-number">{{ feed_items|length }}</div>
-
-                    <div class="stat-label">Feed items</div>
-
+                    <div class="stat-number">{{ profile_stats.posts }}</div>
+                    <div class="stat-label">Posts</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ profile_stats.followers }}</div>
+                    <div class="stat-label">Followers</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ profile_stats.following }}</div>
+                    <div class="stat-label">Following</div>
                 </div>
 
 
@@ -3461,6 +3440,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (action === "repost") {
 
                     button.classList.toggle("active", data.is_reposted);
+                    button.setAttribute(
+                        "aria-pressed",
+                        String(data.is_reposted)
+                    );
 
 
 

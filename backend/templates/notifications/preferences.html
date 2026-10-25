@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Notification settings | BitsXBytes
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .notif-prefs {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 24px 16px 80px;
+        color: var(--text-primary, #f1f5f9);
+    }
+    .notif-prefs h1 { font-size: 1.6rem; margin: 0 0 6px; }
+    .notif-prefs p.hint { color: var(--text-muted, #94a3b8); margin: 0 0 20px; }
+    .notif-prefs table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--bg-card, #101827);
+        border: 1px solid var(--border, rgba(148,163,184,0.18));
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .notif-prefs th, .notif-prefs td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--border, rgba(148,163,184,0.18));
+    }
+    .notif-prefs th.center, .notif-prefs td.center { text-align: center; width: 90px; }
+    .notif-prefs input[type="checkbox"] { width: 18px; height: 18px; }
+    .notif-prefs .actions { margin-top: 18px; display: flex; gap: 12px; align-items: center; }
+    .notif-prefs button, .notif-prefs a.back {
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: 1px solid var(--border, rgba(148,163,184,0.32));
+        background: var(--bg-card-hover, #151f30);
+        color: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        font: inherit;
+    }
+    .notif-prefs .note { color: var(--text-muted, #94a3b8); font-size: .9rem; margin-top: 14px; }
+</style>
+
+<div class="notif-prefs">
+    <h1>Notification settings</h1>
+    <p class="hint">Choose how you want to hear about activity on BitsXBytes.</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th class="center">In-app</th>
+                    <th class="center">Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.label }}</td>
+                        <td class="center">
+                            <input type="checkbox" name="in_app_{{ row.value }}" {% if row.in_app %}checked{% endif %}>
+                        </td>
+                        <td class="center">
+                            <input type="checkbox" name="email_{{ row.value }}" {% if row.email %}checked{% endif %}>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not email_enabled %}
+            <p class="note">
+                Email delivery is not switched on for this site yet, so email
+                choices are saved but no emails will be sent.
+            </p>
+        {% endif %}
+
+        <div class="actions">
+            <button type="submit">Save settings</button>
+            <a class="back" href="{% url 'notification_list' %}">Back to notifications</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

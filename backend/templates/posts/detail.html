@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Vibe by {{ post.author.username }} | BitsXBytes{% endblock %}
+
+{% block content %}
+<style>
+    .post-detail {
+        width: min(100%, 760px);
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .post-detail-back {
+        display: inline-flex;
+        margin-bottom: 20px;
+        color: var(--blue-light, var(--blue));
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .post-detail-author {
+        margin-bottom: 18px;
+        color: var(--text-secondary);
+        font-size: 13px;
+    }
+
+    .post-detail-author a {
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+
+    .post-detail-content {
+        color: var(--text-primary);
+        font-size: 16px;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+
+    .post-detail-image {
+        width: 100%;
+        max-height: 720px;
+        margin-top: 18px;
+        border-radius: 12px;
+        object-fit: contain;
+    }
+</style>
+
+<article class="card post-detail">
+    <a class="post-detail-back" href="{% url 'feed' %}">← Back to feed</a>
+
+    <div class="post-detail-author">
+        <a href="{% url 'public_profile' post.author.username %}">
+            {{ post.author.get_full_name|default:post.author.username }}
+        </a>
+        <span>@{{ post.author.username }} · {{ post.created_at|timesince }} ago</span>
+    </div>
+
+    {% if post.content %}
+        <div class="post-detail-content">{{ post.content }}</div>
+    {% endif %}
+
+    {% if post.image %}
+        <img
+            class="post-detail-image"
+            src="{{ post.image.url }}"
+            alt="Image attached to {{ post.author.username }}'s post"
+        >
+    {% endif %}
+</article>
+{% endblock %}

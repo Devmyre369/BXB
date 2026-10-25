@@ -428,17 +428,25 @@
             </p>
         </div>
 
-        {% if unread_count > 0 %}
-            <button
-                type="button"
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <a
+                href="{% url 'notification_preferences' %}"
                 class="mark-all-button"
-                id="mark-all-read"
+                style="text-decoration:none;"
             >
-                Mark all as read
-            </button>
-        {% endif %}
+                Settings
+            </a>
 
-    </div>
+            {% if unread_count > 0 %}
+                <button
+                    type="button"
+                    class="mark-all-button"
+                    id="mark-all-read"
+                >
+                    Mark all as read
+                </button>
+            {% endif %}
+        </div>
 
     <!-- SUMMARY -->
     <div class="notifications-summary">
@@ -492,14 +500,20 @@
                     <span class="notification-type-icon" aria-hidden="true">
                         {% if notification.notification_type == "like" %}
                             ♥
-                        {% elif notification.notification_type == "comment" %}
-                            ◌
-                        {% elif notification.notification_type == "repost" %}
-                            ↻
-                        {% elif notification.notification_type == "handshake_received" %}
-                            🤝
-                        {% elif notification.notification_type == "handshake_accepted" %}
+                                                {% elif notification.notification_type == "handshake_accepted" %}
                             ✓
+                        {% elif notification.notification_type == "save" %}
+                            ★
+                        {% elif notification.notification_type == "share" %}
+                            ↗
+                        {% elif notification.notification_type == "follow" %}
+                            +
+                        {% elif notification.notification_type == "event_new" or notification.notification_type == "event_registration" or notification.notification_type == "event_team_join" or notification.notification_type == "event_cancelled" %}
+                            📅
+                        {% elif notification.notification_type == "world_join" or notification.notification_type == "world_announcement" %}
+                            🌐
+                        {% elif notification.notification_type == "message" %}
+                            ✉
                         {% else %}
                             •
                         {% endif %}
@@ -547,24 +561,25 @@
 
                         <div class="notification-actions">
 
-                            {% if notification.post %}
-                                <a
-                                    href="{% url 'feed' %}#post-{{ notification.post.id }}"
-                                    class="notification-action"
-                                    data-notification-target
-                                >
-                                    View post →
-                                </a>
-
-                            {% elif notification.handshake %}
-                                <a
-                                    href="{% url 'public_profile' notification.actor.username %}"
-                                    class="notification-action"
-                                    data-notification-target
-                                >
-                                    View profile →
-                                </a>
-                            {% endif %}
+                                                        {% with target_url=notification.get_target_url %}
+                                {% if target_url %}
+                                    <a
+                                        href="{{ target_url }}"
+                                        class="notification-action"
+                                        data-notification-target
+                                    >
+                                        {% if notification.post or notification.vibe %}
+                                            View post →
+                                        {% elif notification.event %}
+                                            View event →
+                                        {% elif notification.handshake or notification.notification_type == "follow" %}
+                                            View profile →
+                                        {% else %}
+                                            View →
+                                        {% endif %}
+                                    </a>
+                                {% endif %}
+                            {% endwith %}
 
                             {% if not notification.is_read %}
                                 <button
