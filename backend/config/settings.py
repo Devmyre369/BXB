@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "events",
     'publish',
     'vibespace',
-    'chat',
+    "chat.apps.ChatConfig",
 
 ]
 

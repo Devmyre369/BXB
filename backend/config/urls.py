@@ -126,7 +126,7 @@ urlpatterns = [
     path("feed/", include("posts.urls")),
     path("search/", include("search.urls")),
     path("handshake/", include("handshake.urls")),
-    path("messages/", include("messaging.urls", namespace="messaging")),
+    path("messages/", include("chat.urls", namespace="chat")),
     path("notifications/", include("notifications.urls")),
     path("ai-studio/", include("ai_studio.urls")),
     path("events/", include("events.urls")),
