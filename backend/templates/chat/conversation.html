@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ other_user.username }} | BitsXBytes{% endblock %}
+
+{% block content %}
+<style>
+.chat-page{max-width:900px;height:calc(100vh - 150px);min-height:520px;margin:0 auto;padding:20px 14px 30px;display:flex;flex-direction:column;color:var(--text-primary)}
+.chat-shell{display:flex;flex:1;min-height:0;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-card)}
+.chat-header{display:flex;align-items:center;gap:12px;padding:15px 18px;border-bottom:1px solid var(--border);background:var(--bg-card)}
+.chat-back{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--border);border-radius:9px;color:var(--text-primary);text-decoration:none;flex-shrink:0}
+.chat-avatar{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(59,130,246,.15);color:var(--blue-light);font-size:17px;font-weight:750;flex-shrink:0}
+.chat-header-info{min-width:0;flex:1}
+.chat-title{font-size:14px;font-weight:750;overflow-wrap:anywhere}
+.chat-handle{margin-top:3px;color:var(--text-muted);font-size:11px}
+.chat-secure{color:var(--success);font-size:11px;white-space:nowrap}
+.chat-notice{margin:12px 16px 0;padding:9px 12px;border:1px solid var(--border);border-radius:9px;color:var(--text-secondary);font-size:11px;line-height:1.5}
+.chat-messages{flex:1;min-height:0;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:13px;scroll-behavior:smooth}
+.chat-empty{margin:auto;text-align:center;color:var(--text-secondary);font-size:13px;line-height:1.7}
+.chat-message{display:flex;flex-direction:column;max-width:min(76%,560px);align-self:flex-start;gap:5px}
+.chat-message.mine{align-self:flex-end;align-items:flex-end}
+.chat-bubble{padding:11px 13px;border:1px solid var(--border);border-radius:14px 14px 14px 4px;background:var(--bg-secondary);font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-message.mine .chat-bubble{color:#fff;background:var(--blue);border-color:var(--blue);border-radius:14px 14px 4px 14px}
+.chat-message-meta{display:flex;gap:7px;align-items:center;color:var(--text-muted);font-size:10px}
+.chat-compose{display:flex;align-items:flex-end;gap:10px;padding:14px 16px;border-top:1px solid var(--border);background:var(--bg-card)}
+.chat-compose textarea{flex:1;min-width:0;min-height:44px;max-height:140px;resize:vertical;padding:12px 13px;border:1px solid var(--border);border-radius:12px;background:var(--bg-secondary);color:var(--text-primary);font:inherit;font-size:13px;line-height:1.5;outline:none}
+.chat-compose textarea:focus{border-color:var(--blue)}
+.chat-send{min-height:44px;padding:0 18px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-size:12px;font-weight:750;cursor:pointer}
+.chat-send:disabled{opacity:.6;cursor:not-allowed}
+.chat-error{display:none;margin:0 16px 10px;padding:9px 12px;border-radius:9px;border:1px solid rgba(248,113,113,.3);color:#fca5a5;background:rgba(248,113,113,.07);font-size:12px}
+.chat-error.visible{display:block}
+@media(max-width:560px){.chat-page{height:calc(100vh - 100px);min-height:480px;padding:10px 6px 20px}.chat-header{padding:12px}.chat-messages{padding:14px 11px}.chat-message{max-width:88%}.chat-compose{padding:10px;gap:7px}.chat-send{padding:0 13px}.chat-secure{display:none}}
+</style>
+
+<main class="chat-page">
+    <section class="chat-shell" aria-label="Private conversation">
+        <header class="chat-header">
+            <a class="chat-back" href="{% url 'messaging:inbox' %}" aria-label="Back to messages">←</a>
+            <div class="chat-avatar">{{ other_user.username|first|upper }}</div>
+            <div class="chat-header-info">
+                <div class="chat-title">{{ other_user.get_full_name|default:other_user.username }}</div>
+                <div class="chat-handle">@{{ other_user.username }}</div>
+            </div>
+            <div class="chat-secure">✓ Connected</div>
+        </header>
+
+        <div class="chat-notice">
+            Private messages are available because you and @{{ other_user.username }} have an accepted handshake.
+        </div>
+
+        <div class="chat-messages" id="chat-messages" aria-live="polite">
+            {% for message in conversation_messages %}
+                <article class="chat-message {% if message.sender_id == request.user.id %}mine{% endif %}">
+                    <div class="chat-bubble">{{ message.body }}</div>
+                    <div class="chat-message-meta">
+                        <span>{% if message.sender_id == request.user.id %}You{% else %}{{ message.sender.username }}{% endif %}</span>
+                        <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"M j, H:i" }}</time>
+                        {% if message.sender_id == request.user.id and message.is_read %}
+                            <span>Read</span>
+                        {% endif %}
+                    </div>
+                </article>
+            {% empty %}
+                <div class="chat-empty">
+                    <div style="font-size:28px;margin-bottom:8px">✉️</div>
+                    <strong>No messages yet</strong><br>
+                    Say hello and start the conversation.
+                </div>
+            {% endfor %}
+        </div>
+
+        <div id="chat-error" class="chat-error" role="alert"></div>
+
+        <form class="chat-compose" method="post" id="chat-form">
+            {% csrf_token %}
+            <textarea
+                name="body"
+                id="chat-body"
+                maxlength="5000"
+                rows="1"
+                placeholder="Write a message…"
+                aria-label="Message"
+                required
+            ></textarea>
+            <button class="chat-send" id="chat-send" type="submit">Send ↑</button>
+        </form>
+    </section>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const messages = document.getElementById("chat-messages");
+    const form = document.getElementById("chat-form");
+    const textarea = document.getElementById("chat-body");
+    const sendButton = document.getElementById("chat-send");
+    const errorBox = document.getElementById("chat-error");
+
+    if (messages) messages.scrollTop = messages.scrollHeight;
+
+    if (!form || !textarea || !sendButton) return;
+
+    textarea.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            form.requestSubmit();
+        }
+    });
+
+    form.addEventListener("submit", function () {
+        const body = textarea.value.trim();
+        if (!body) {
+            textarea.value = "";
+            return;
+        }
+
+        sendButton.disabled = true;
+        sendButton.textContent = "Sending…";
+        errorBox.classList.remove("visible");
+    });
+});
+</script>
+{% endblock %}
