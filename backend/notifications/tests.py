@@ -48,3 +48,18 @@ class PostNotificationTests(TestCase):
                     ).count(),
                     1,
                 )
+
+    def test_notification_page_renders_unread_notifications(self):
+        Notification.objects.create(
+            recipient=self.actor,
+            actor=self.author,
+            notification_type=Notification.NotificationType.LIKE,
+            post=self.post,
+        )
+
+        response = self.client.get(reverse("notification_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Notifications")
+        self.assertContains(response, "@author")
+        self.assertContains(response, "liked your post.")
