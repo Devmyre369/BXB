@@ -509,7 +509,7 @@
 
         <div class="editor-heading">
 
-            <a href="{% url 'my_profile' %}" class="back-btn" title="Back to profile">
+            <a href="{% url 'my_profile' %}" class="back-btn" title="Back to profile" onclick="if (history.length > 1) { history.back(); return false; }">
                 ←
             </a>
 

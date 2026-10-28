@@ -470,7 +470,7 @@
 <main class="vibe-detail-page">
 
     <div class="vibe-detail-top">
-        <a href="{% url 'vibespace:explore' %}" class="vibe-back-link">
+        <a href="{% url 'vibespace:explore' %}" class="vibe-back-link" onclick="if (history.length > 1) { history.back(); return false; }">
             ← Back to Explore
         </a>
 

@@ -865,6 +865,14 @@
                 <div class="profile-actions">
 
                     <a
+                        href="{% url 'feed' %}"
+                        class="btn btn-secondary"
+                        onclick="if (history.length > 1) { history.back(); return false; }"
+                    >
+                        ← Back
+                    </a>
+
+                    <a
                         href="{% url 'edit_profile' %}"
                         class="btn btn-primary"
                     >

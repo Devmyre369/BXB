@@ -282,7 +282,8 @@
 
 <div class="people-page">
     <a class="people-back"
-       href="{% url 'public_profile' profile_user.username %}">
+       href="{% url 'public_profile' profile_user.username %}"
+       onclick="if (history.length > 1) { history.back(); return false; }">
         ← Back to @{{ profile_user.username }}'s profile
     </a>
 

@@ -125,7 +125,7 @@
                         <a href="{% url 'login' %}" class="profile-btn">🤝 Login to Handshake</a>
                     {% endif %}
 
-                    <a href="{% url 'feed' %}" class="profile-btn">← Back</a>
+                    <a href="{% url 'feed' %}" class="profile-btn" onclick="if (history.length > 1) { history.back(); return false; }">← Back</a>
                 </div>
             </div>
 

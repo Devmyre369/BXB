@@ -45,6 +45,7 @@
 </style>
 
 <div class="notif-prefs">
+    <a class="back" href="{% url 'notification_list' %}" onclick="if (history.length > 1) { history.back(); return false; }" style="display:inline-flex;align-items:center;margin-bottom:16px;">← Back to notifications</a>
     <h1>Notification settings</h1>
     <p class="hint">Choose how you want to hear about activity on BitsXBytes.</p>
 
@@ -83,7 +84,7 @@
 
         <div class="actions">
             <button type="submit">Save settings</button>
-            <a class="back" href="{% url 'notification_list' %}">Back to notifications</a>
+            <a class="back" href="{% url 'notification_list' %}" onclick="if (history.length > 1) { history.back(); return false; }">Back to notifications</a>
         </div>
     </form>
 </div>

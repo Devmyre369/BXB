@@ -367,11 +367,34 @@
         .studio-grid { grid-template-columns: 1fr; gap: 12px; }
         .studio-tool { min-height: 205px; padding: 16px; }
     }
+    .studio-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        color: var(--st-eyebrow, #2563eb);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    [data-theme="dark"] .studio-back-link {
+        color: #60a5fa;
+    }
+
+    .studio-back-link:hover {
+        color: var(--st-text-primary, #ffffff);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="ai-studio">
+
+    <a href="{% url 'feed' %}" class="studio-back-link" onclick="if (history.length > 1) { history.back(); return false; }">
+        ← Back
+    </a>
     <section class="studio-hero">
         <div class="studio-eyebrow">✦ BxB Intelligence</div>
         <h1>One studio.<br>Endless ways to create.</h1>

@@ -22,9 +22,16 @@
 .person-action{padding:9px 13px;border-radius:8px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);text-decoration:none;font-size:12px;font-weight:600;white-space:nowrap}
 .people-empty{text-align:center;padding:38px 20px;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg)}
 @media(max-width:500px){.person-card{padding:13px;gap:10px}.person-action{padding:8px;font-size:11px}.people-header{padding:19px}}
+.people-back{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;color:var(--blue-light);text-decoration:none;font-size:14px;font-weight:500;transition:color 0.2s}
+.people-back:hover{color:var(--text-primary)}
 </style>
 
 <div class="people-page">
+    <a class="people-back"
+       href="{% url 'public_profile' profile_user.username %}"
+       onclick="if (history.length > 1) { history.back(); return false; }">
+        ← Back to @{{ profile_user.username }}'s profile
+    </a>
     <div class="people-header">
         <h1>Connections</h1>
         <p>People connected with @{{ profile_user.username }} on BitsXBytes.</p>

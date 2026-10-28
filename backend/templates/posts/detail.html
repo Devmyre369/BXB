@@ -47,7 +47,7 @@
 </style>
 
 <article class="card post-detail">
-    <a class="post-detail-back" href="{% url 'feed' %}">← Back to feed</a>
+    <a class="post-detail-back" href="{% url 'feed' %}" onclick="if (history.length > 1) { history.back(); return false; }">← Back to feed</a>
 
     <div class="post-detail-author">
         <a href="{% url 'public_profile' post.author.username %}">

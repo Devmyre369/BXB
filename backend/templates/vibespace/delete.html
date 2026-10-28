@@ -56,11 +56,30 @@
         background: #dc2626;
         color: #fff;
     }
+    .vibe-back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 20px;
+        color: var(--blue-light, #60a5fa);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .vibe-back-link:hover {
+        color: var(--text-primary, #ffffff);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="vibe-delete-page">
+
+    <a href="{% url 'vibespace:detail' vibe.pk %}" class="vibe-back-link" onclick="if (history.length > 1) { history.back(); return false; }">
+        ← Back to Vibe
+    </a>
     <section class="vibe-delete-card" aria-labelledby="delete-vibe-heading">
         <h1 id="delete-vibe-heading">Delete this Vibe?</h1>
         <p>

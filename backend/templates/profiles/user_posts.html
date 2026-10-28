@@ -522,6 +522,7 @@
             href="{% url 'public_profile' profile_user.username %}"
             aria-label="Back to profile"
             title="Back to profile"
+            onclick="if (history.length > 1) { history.back(); return false; }"
         >←</a>
 
         <div class="posts-heading">

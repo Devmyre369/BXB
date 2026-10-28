@@ -348,7 +348,7 @@
 
 <div class="create-event-page">
 
-    <a href="{% url 'events:event_list' %}" class="event-back-link">
+    <a href="{% url 'events:event_list' %}" class="event-back-link" onclick="if (history.length > 1) { history.back(); return false; }">
         &#8592; Back to Events
     </a>
 
