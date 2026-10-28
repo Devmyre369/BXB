@@ -1,0 +1,74 @@
+% extends "base.html" %}
+
+{% block title %}Messages | BitsXBytes{% endblock %}
+
+{% block content %}
+<style>
+.messaging-page{max-width:900px;margin:0 auto;padding:24px 16px 50px;color:var(--text-primary)}
+.messaging-header{margin-bottom:22px}
+.messaging-header h1{margin:0;font-size:28px;font-weight:750}
+.messaging-subtitle{margin:7px 0 0;color:var(--text-secondary);font-size:14px}
+.messaging-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-card)}
+.conversation-row{display:flex;align-items:center;gap:14px;padding:17px 20px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;transition:background .15s ease}
+.conversation-row:last-child{border-bottom:0}
+.conversation-row:hover{background:var(--bg-card-hover)}
+.conversation-avatar{width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;background:rgba(59,130,246,.15);color:var(--blue-light);font-weight:750;font-size:18px}
+.conversation-main{min-width:0;flex:1}
+.conversation-name{font-size:14px;font-weight:700;color:var(--text-primary);overflow-wrap:anywhere}
+.conversation-preview{margin-top:5px;color:var(--text-secondary);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conversation-meta{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+.conversation-time{color:var(--text-muted);font-size:10px}
+.unread-badge{min-width:20px;height:20px;padding:0 6px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:var(--blue);color:#fff;font-size:10px;font-weight:700}
+.messaging-empty{padding:48px 24px;text-align:center}
+.messaging-empty-icon{font-size:32px}
+.messaging-empty h2{margin:12px 0 7px;font-size:17px}
+.messaging-empty p{margin:0;color:var(--text-secondary);font-size:13px;line-height:1.6}
+.messaging-back{display:inline-flex;margin-top:18px;color:var(--blue-light);text-decoration:none;font-size:13px;font-weight:650}
+@media(max-width:520px){.messaging-page{padding:18px 10px 40px}.messaging-header h1{font-size:24px}.conversation-row{padding:14px 12px;gap:10px}.conversation-avatar{width:42px;height:42px}.conversation-preview{max-width:210px}}
+</style>
+
+<main class="messaging-page">
+    <header class="messaging-header">
+        <h1>Messages</h1>
+        <p class="messaging-subtitle">Private conversations with your accepted BXB connections.</p>
+    </header>
+
+    <section class="messaging-card" aria-label="Conversations">
+        {% for item in conversations %}
+            <a class="conversation-row" href="{% url 'messaging:conversation' item.other_user.username %}">
+                <div class="conversation-avatar">
+                    {{ item.other_user.username|first|upper }}
+                </div>
+                <div class="conversation-main">
+                    <div class="conversation-name">
+                        {{ item.other_user.get_full_name|default:item.other_user.username }}
+                        <span style="font-weight:400;color:var(--text-muted)">@{{ item.other_user.username }}</span>
+                    </div>
+                    <div class="conversation-preview">
+                        {% if item.last_message %}
+                            {% if item.last_message.sender_id == request.user.id %}You: {% endif %}{{ item.last_message.body|truncatechars:100 }}
+                        {% else %}
+                            You are connected. Start the conversation.
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="conversation-meta">
+                    {% if item.last_message %}
+                        <span class="conversation-time">{{ item.last_message.created_at|date:"M j, H:i" }}</span>
+                    {% endif %}
+                    {% if item.unread_count %}
+                        <span class="unread-badge">{{ item.unread_count }}</span>
+                    {% endif %}
+                </div>
+            </a>
+        {% empty %}
+            <div class="messaging-empty">
+                <div class="messaging-empty-icon">✉️</div>
+                <h2>No conversations yet</h2>
+                <p>When someone accepts your handshake, you can message each other here.</p>
+                <a class="messaging-back" href="{% url 'feed' %}">← Back to feed</a>
+            </div>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

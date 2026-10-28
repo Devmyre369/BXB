@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "events",
     'publish',
     'vibespace',
+    'chat',
 
 ]
 

@@ -110,19 +110,55 @@
                             <span id="follow-button-text">{% if is_following %}Following{% else %}Follow{% endif %}</span>
                         </button>
 
-                        <a
-                            id="handshake-button"
-                            class="profile-btn primary"
-                            href="{% url 'collaboration_submit' profile_user.username %}"
-                        >
-                            <span>🤝</span>
-                            <span>Collaborate</span>
-                        </a>
+                        {% if handshake_status == 'accepted' %}
+                            <button type="button" class="profile-btn handshake-connected" disabled>
+                                ✓ Connected
+                            </button>
+                        {% elif handshake_status == 'pending_received' %}
+                            <button
+                                type="button"
+                                class="profile-btn primary"
+                                data-handshake-action="accept"
+                                data-handshake-url="{% url 'accept_handshake' handshake_id %}"
+                            >
+                                ✓ Accept Request
+                            </button>
+                            <button
+                                type="button"
+                                class="profile-btn"
+                                data-handshake-action="reject"
+                                data-handshake-url="{% url 'reject_handshake' handshake_id %}"
+                            >
+                                Decline
+                            </button>
+                        {% elif handshake_status == 'pending_sent' %}
+                            <button type="button" class="profile-btn handshake-pending" disabled>
+                                Request Pending
+                            </button>
+                            <button
+                                type="button"
+                                class="profile-btn"
+                                data-handshake-action="cancel"
+                                data-handshake-url="{% url 'cancel_handshake' handshake_id %}"
+                            >
+                                Cancel Request
+                            </button>
+                        {% else %}
+                            <button
+                                type="button"
+                                class="profile-btn primary"
+                                data-handshake-action="send"
+                                data-handshake-url="{% url 'send_handshake' profile_user.username %}"
+                            >
+                                🤝 Send Handshake
+                            </button>
+                        {% endif %}
 
+                        <div id="handshake-status" class="handshake-status" role="status" aria-live="polite"></div>
                         <div id="follow-status" class="follow-status" role="status" aria-live="polite"></div>
                     {% else %}
                         <a href="{% url 'login' %}" class="profile-btn primary">Login to Follow</a>
-                        <a href="{% url 'login' %}" class="profile-btn">🤝 Login to Handshake</a>
+                        <a href="{% url 'login' %}" class="profile-btn">🤝 Login to Connect</a>
                     {% endif %}
 
                     <a href="{% url 'feed' %}" class="profile-btn" onclick="if (history.length > 1) { history.back(); return false; }">← Back</a>
@@ -371,6 +407,80 @@ document.addEventListener("DOMContentLoaded", function () {
         } finally {
             button.disabled = false;
         }
+    });
+});
+</script>
+
+<script>
+/* HANDSHAKE REQUESTS */
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll("[data-handshake-action]");
+    const statusBox = document.getElementById("handshake-status");
+    const csrfInput = document.querySelector(
+        "#handshake-csrf input[name='csrfmiddlewaretoken']"
+    );
+    const csrfToken = csrfInput ? csrfInput.value : "";
+
+    if (!buttons.length || !statusBox) return;
+
+    function showHandshakeStatus(message) {
+        statusBox.textContent = message;
+        statusBox.classList.add("visible");
+    }
+
+    const confirmations = {
+        send: "Send a handshake request to this user?",
+        accept: "Accept this handshake request?",
+        reject: "Decline this handshake request?",
+        cancel: "Cancel your handshake request?"
+    };
+
+    buttons.forEach(function (button) {
+        button.addEventListener("click", async function () {
+            if (button.disabled) return;
+
+            const action = button.dataset.handshakeAction;
+            const url = button.dataset.handshakeUrl;
+
+            if (confirmations[action] && !window.confirm(confirmations[action])) {
+                return;
+            }
+
+            button.disabled = true;
+            showHandshakeStatus("Processing your request...");
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrfToken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    credentials: "same-origin"
+                });
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (_) {
+                    throw new Error(
+                        "The server returned an unexpected response. Refresh the page and try again."
+                    );
+                }
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || "Unable to process handshake.");
+                }
+
+                showHandshakeStatus(data.message || "Handshake updated successfully.");
+                window.location.reload();
+            } catch (error) {
+                showHandshakeStatus(
+                    error.message || "Something went wrong. Please try again."
+                );
+                button.disabled = false;
+            }
+        });
     });
 });
 </script>

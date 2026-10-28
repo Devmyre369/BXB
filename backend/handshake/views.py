@@ -362,7 +362,7 @@ def cancel_handshake(request, handshake_id):
             "message": "Handshake request cancelled."
         }
     )
-'''
+
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -739,4 +739,303 @@ def cancel_handshake(request, handshake_id):
         "success": True,
         "status": "cancelled",
         "message": "Collaboration request cancelled.",
+    })
+
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth import get_user_model
+from .models import Handshake
+from .models import Message  # Assuming you put Message in chat or handshake
+
+User = get_user_model()
+
+@login_required
+def send_handshake(request, user_id):
+    receiver = get_object_or_404(User, id=user_id)
+    if receiver != request.user:
+        Handshake.objects.get_or_create(sender=request.user, receiver=receiver)
+    return redirect('profiles:public_profile', user_id=user_id)
+
+@login_required
+def accept_handshake(request, handshake_id):
+    handshake = get_object_or_404(Handshake, id=handshake_id, receiver=request.user)
+    handshake.status = 'accepted'
+    handshake.save()
+    return redirect('handshake:requests_list')
+
+@login_required
+def reject_handshake(request, handshake_id):
+    handshake = get_object_or_404(Handshake, id=handshake_id, receiver=request.user)
+    handshake.status = 'rejected'
+    handshake.save()
+    return redirect('handshake:requests_list')
+
+@login_required
+def personal_chat(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+    
+    # Verify if an accepted handshake exists between the two users
+    has_handshake = Handshake.objects.filter(
+        (models.Q(sender=request.user, receiver=other_user) | models.Q(sender=other_user, receiver=request.user)),
+        status='accepted'
+    ).exists()
+
+    if not has_handshake:
+        return HttpResponseForbidden("You must have an accepted handshake with this user to chat personally.")
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            Message.objects.create(sender=request.user, receiver=other_user, content=content)
+            return redirect('handshake:personal_chat', user_id=user_id)
+
+    messages = Message.objects.filter(
+        (models.Q(sender=request.user, receiver=other_user) | models.Q(sender=other_user, receiver=request.user))
+    ).order_by('timestamp')
+
+    return render(request, 'handshake/chat.ico.html' if False else 'handshake/personal_chat.html', {
+        'other_user': other_user,
+        'messages': messages
+    })
+    '''
+
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+
+from users.models import User
+from notifications.models import Notification
+from notifications.services import notify
+
+from .models import Handshake
+
+
+def json_error(message, status=400, **extra):
+    return JsonResponse(
+        {
+            "success": False,
+            "error": message,
+            **extra,
+        },
+        status=status,
+    )
+
+
+@login_required
+@require_POST
+def send_handshake(request, username):
+    receiver = get_object_or_404(User, username=username)
+
+    if receiver == request.user:
+        return json_error("You cannot send a handshake to yourself.")
+
+    with transaction.atomic():
+        # A connection already exists in either direction.
+        accepted = Handshake.objects.filter(
+            status=Handshake.Status.ACCEPTED,
+        ).filter(
+            sender=request.user,
+            receiver=receiver,
+        ).exists() or Handshake.objects.filter(
+            status=Handshake.Status.ACCEPTED,
+        ).filter(
+            sender=receiver,
+            receiver=request.user,
+        ).exists()
+
+        if accepted:
+            return json_error(
+                "You are already connected.",
+                status=400,
+            )
+
+        # If they already sent you a request, respond to that
+        # request instead of creating a duplicate.
+        reverse_pending = Handshake.objects.filter(
+            sender=receiver,
+            receiver=request.user,
+            status=Handshake.Status.PENDING,
+        ).first()
+
+        if reverse_pending:
+            return json_error(
+                "This user has already sent you a handshake. "
+                "Accept or decline their request.",
+                status=400,
+                handshake_id=reverse_pending.id,
+                status_value=reverse_pending.status,
+            )
+
+        existing = Handshake.objects.filter(
+            sender=request.user,
+            receiver=receiver,
+        ).first()
+
+        if existing and existing.status == Handshake.Status.PENDING:
+            return json_error(
+                "Your handshake request is already pending.",
+                status=400,
+                handshake_id=existing.id,
+                status_value=existing.status,
+            )
+
+        if existing and existing.status == Handshake.Status.REJECTED:
+            existing.status = Handshake.Status.PENDING
+            existing.save(update_fields=["status", "updated_at"])
+            handshake = existing
+        else:
+            handshake = Handshake.objects.create(
+                sender=request.user,
+                receiver=receiver,
+                status=Handshake.Status.PENDING,
+            )
+
+        notify(
+            recipient=receiver,
+            actor=request.user,
+            notification_type=(
+                Notification.NotificationType.HANDSHAKE_RECEIVED
+            ),
+            handshake=handshake,
+            message=(
+                f"{request.user.username} sent you a handshake."
+            ),
+        )
+
+    return JsonResponse({
+        "success": True,
+        "status": handshake.status,
+        "handshake_id": handshake.id,
+        "message": "Handshake request sent successfully.",
+    })
+
+
+@login_required
+@require_POST
+def accept_handshake(request, handshake_id):
+    with transaction.atomic():
+        handshake = get_object_or_404(
+            Handshake.objects.select_for_update(),
+            id=handshake_id,
+        )
+
+        if handshake.receiver != request.user:
+            return json_error(
+                "You are not allowed to accept this request.",
+                status=403,
+            )
+
+        if handshake.status != Handshake.Status.PENDING:
+            return json_error(
+                "This handshake is no longer pending.",
+                status=400,
+                status_value=handshake.status,
+            )
+
+        already_connected = Handshake.objects.filter(
+            sender=handshake.sender,
+            receiver=handshake.receiver,
+            status=Handshake.Status.ACCEPTED,
+        ).exists() or Handshake.objects.filter(
+            sender=handshake.receiver,
+            receiver=handshake.sender,
+            status=Handshake.Status.ACCEPTED,
+        ).exists()
+
+        if already_connected:
+            return json_error("You are already connected.")
+
+        handshake.status = Handshake.Status.ACCEPTED
+        handshake.save(update_fields=["status", "updated_at"])
+
+        # Remove an unnecessary request in the opposite direction.
+        Handshake.objects.filter(
+            sender=handshake.receiver,
+            receiver=handshake.sender,
+            status=Handshake.Status.PENDING,
+        ).delete()
+
+        notify(
+            recipient=handshake.sender,
+            actor=request.user,
+            notification_type=(
+                Notification.NotificationType.HANDSHAKE_ACCEPTED
+            ),
+            handshake=handshake,
+            message=(
+                f"{request.user.username} accepted your handshake."
+            ),
+        )
+
+    return JsonResponse({
+        "success": True,
+        "status": Handshake.Status.ACCEPTED,
+        "handshake_id": handshake.id,
+        "message": "Handshake accepted successfully.",
+        "message_url": None,
+    })
+
+
+@login_required
+@require_POST
+def reject_handshake(request, handshake_id):
+    handshake = get_object_or_404(
+        Handshake,
+        id=handshake_id,
+    )
+
+    if handshake.receiver != request.user:
+        return json_error(
+            "You are not allowed to decline this request.",
+            status=403,
+        )
+
+    if handshake.status != Handshake.Status.PENDING:
+        return json_error(
+            "This handshake is no longer pending.",
+            status=400,
+            status_value=handshake.status,
+        )
+
+    handshake.status = Handshake.Status.REJECTED
+    handshake.save(update_fields=["status", "updated_at"])
+
+    return JsonResponse({
+        "success": True,
+        "status": handshake.status,
+        "handshake_id": handshake.id,
+        "message": "Handshake declined.",
+    })
+
+
+@login_required
+@require_POST
+def cancel_handshake(request, handshake_id):
+    handshake = get_object_or_404(
+        Handshake,
+        id=handshake_id,
+    )
+
+    if handshake.sender != request.user:
+        return json_error(
+            "You are not allowed to cancel this request.",
+            status=403,
+        )
+
+    if handshake.status != Handshake.Status.PENDING:
+        return json_error(
+            "Only pending requests can be cancelled.",
+            status=400,
+            status_value=handshake.status,
+        )
+
+    handshake.delete()
+
+    return JsonResponse({
+        "success": True,
+        "status": "cancelled",
+        "message": "Handshake request cancelled.",
     })
