@@ -1,4 +1,4 @@
- {% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{{ profile_user.username }} | BitsXBytes{% endblock %}
 
@@ -111,9 +111,24 @@
                         </button>
 
                         {% if handshake_status == 'accepted' %}
-                            <button type="button" class="profile-btn handshake-connected" disabled>
+                            <a
+                                href="{% url 'chat:conversation' profile_user.username %}"
+                                class="profile-btn primary"
+                                title="Send a private message"
+                            >
+                                <span aria-hidden="true">✉</span>
+                                <span>Message</span>
+                            </a>
+
+                            <button
+                                type="button"
+                                class="profile-btn handshake-connected"
+                                disabled
+                                aria-label="You are connected"
+                            >
                                 ✓ Connected
                             </button>
+
                         {% elif handshake_status == 'pending_received' %}
                             <button
                                 type="button"
@@ -123,6 +138,7 @@
                             >
                                 ✓ Accept Request
                             </button>
+
                             <button
                                 type="button"
                                 class="profile-btn"
@@ -131,10 +147,12 @@
                             >
                                 Decline
                             </button>
+
                         {% elif handshake_status == 'pending_sent' %}
                             <button type="button" class="profile-btn handshake-pending" disabled>
                                 Request Pending
                             </button>
+
                             <button
                                 type="button"
                                 class="profile-btn"
@@ -143,6 +161,7 @@
                             >
                                 Cancel Request
                             </button>
+
                         {% else %}
                             <button
                                 type="button"
@@ -156,6 +175,7 @@
 
                         <div id="handshake-status" class="handshake-status" role="status" aria-live="polite"></div>
                         <div id="follow-status" class="follow-status" role="status" aria-live="polite"></div>
+
                     {% else %}
                         <a href="{% url 'login' %}" class="profile-btn primary">Login to Follow</a>
                         <a href="{% url 'login' %}" class="profile-btn">🤝 Login to Connect</a>
@@ -275,6 +295,7 @@
                     <article class="post-item">
                         <div class="post-date">{{ post.created_at|date:"M d, Y · H:i" }}</div>
                         <div class="post-content">{{ post.content }}</div>
+
                         {% if post.image %}
                             <img src="{{ post.image.url }}" alt="Post image" loading="lazy" class="post-image">
                         {% endif %}
@@ -298,11 +319,13 @@
                             <span class="social-icon">GH</span><span>GitHub</span><span style="margin-left:auto">↗</span>
                         </a>
                     {% endif %}
+
                     {% if profile.linkedin %}
                         <a href="{{ profile.linkedin }}" target="_blank" rel="noopener noreferrer" class="social-link">
                             <span class="social-icon">in</span><span>LinkedIn</span><span style="margin-left:auto">↗</span>
                         </a>
                     {% endif %}
+
                     {% if not profile.github and not profile.linkedin %}
                         <div class="empty-text">No social links added yet.</div>
                     {% endif %}
@@ -336,9 +359,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const text = document.getElementById("follow-button-text");
     const icon = document.getElementById("follow-button-icon");
     const statusBox = document.getElementById("follow-status");
+
     const csrfInput = document.querySelector(
         "#handshake-csrf input[name='csrfmiddlewaretoken']"
     );
+
     const csrfToken = csrfInput ? csrfInput.value : "";
 
     let isFollowing = button.dataset.following === "true";
@@ -362,6 +387,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const username = button.dataset.username;
+
             const urlTemplate = isFollowing
                 ? "{% url 'unfollow_user' 'USERNAME_PLACEHOLDER' %}"
                 : "{% url 'follow_user' 'USERNAME_PLACEHOLDER' %}";
@@ -388,8 +414,10 @@ document.addEventListener("DOMContentLoaded", function () {
             renderFollowState(data.following);
 
             const followerCount = document.getElementById("followers-count");
+
             if (followerCount) {
                 const currentCount = Number(followerCount.textContent) || 0;
+
                 followerCount.textContent = data.following
                     ? currentCount + 1
                     : Math.max(0, currentCount - 1);
@@ -400,6 +428,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ? "You are now following this user."
                     : "You unfollowed this user."
             ));
+
         } catch (error) {
             showFollowStatus(
                 error.message || "Something went wrong. Please try again."
@@ -416,9 +445,11 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const buttons = document.querySelectorAll("[data-handshake-action]");
     const statusBox = document.getElementById("handshake-status");
+
     const csrfInput = document.querySelector(
         "#handshake-csrf input[name='csrfmiddlewaretoken']"
     );
+
     const csrfToken = csrfInput ? csrfInput.value : "";
 
     if (!buttons.length || !statusBox) return;
@@ -442,7 +473,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const action = button.dataset.handshakeAction;
             const url = button.dataset.handshakeUrl;
 
-            if (confirmations[action] && !window.confirm(confirmations[action])) {
+            if (
+                confirmations[action] &&
+                !window.confirm(confirmations[action])
+            ) {
                 return;
             }
 
@@ -460,6 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 let data;
+
                 try {
                     data = await response.json();
                 } catch (_) {
@@ -472,12 +507,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error(data.error || "Unable to process handshake.");
                 }
 
-                showHandshakeStatus(data.message || "Handshake updated successfully.");
+                showHandshakeStatus(
+                    data.message || "Handshake updated successfully."
+                );
+
                 window.location.reload();
+
             } catch (error) {
                 showHandshakeStatus(
                     error.message || "Something went wrong. Please try again."
                 );
+
                 button.disabled = false;
             }
         });

@@ -1,4 +1,5 @@
-% extends "base.html" %}
+
+{% extends "base.html" %}
 
 {% block title %}Messages | BitsXBytes{% endblock %}
 
@@ -24,40 +25,64 @@
 .messaging-empty h2{margin:12px 0 7px;font-size:17px}
 .messaging-empty p{margin:0;color:var(--text-secondary);font-size:13px;line-height:1.6}
 .messaging-back{display:inline-flex;margin-top:18px;color:var(--blue-light);text-decoration:none;font-size:13px;font-weight:650}
-@media(max-width:520px){.messaging-page{padding:18px 10px 40px}.messaging-header h1{font-size:24px}.conversation-row{padding:14px 12px;gap:10px}.conversation-avatar{width:42px;height:42px}.conversation-preview{max-width:210px}}
+@media(max-width:520px){
+.messaging-page{padding:18px 10px 40px}
+.messaging-header h1{font-size:24px}
+.conversation-row{padding:14px 12px;gap:10px}
+.conversation-avatar{width:42px;height:42px}
+.conversation-preview{max-width:210px}
+}
 </style>
 
 <main class="messaging-page">
     <header class="messaging-header">
         <h1>Messages</h1>
-        <p class="messaging-subtitle">Private conversations with your accepted BXB connections.</p>
+        <p class="messaging-subtitle">
+            Private conversations with your accepted BXB connections.
+        </p>
     </header>
 
     <section class="messaging-card" aria-label="Conversations">
         {% for item in conversations %}
-            <a class="conversation-row" href="{% url 'messaging:conversation' item.other_user.username %}">
+            <a
+                class="conversation-row"
+                href="{% url 'chat:conversation' item.other_user.username %}"
+            >
                 <div class="conversation-avatar">
                     {{ item.other_user.username|first|upper }}
                 </div>
+
                 <div class="conversation-main">
                     <div class="conversation-name">
                         {{ item.other_user.get_full_name|default:item.other_user.username }}
-                        <span style="font-weight:400;color:var(--text-muted)">@{{ item.other_user.username }}</span>
+                        <span style="font-weight:400;color:var(--text-muted)">
+                            @{{ item.other_user.username }}
+                        </span>
                     </div>
+
                     <div class="conversation-preview">
                         {% if item.last_message %}
-                            {% if item.last_message.sender_id == request.user.id %}You: {% endif %}{{ item.last_message.body|truncatechars:100 }}
+                            {% if item.last_message.sender_id == request.user.id %}
+                                You:
+                            {% endif %}
+                            {{ item.last_message.body|truncatechars:100 }}
                         {% else %}
                             You are connected. Start the conversation.
                         {% endif %}
                     </div>
                 </div>
+
                 <div class="conversation-meta">
                     {% if item.last_message %}
-                        <span class="conversation-time">{{ item.last_message.created_at|date:"M j, H:i" }}</span>
+                        <span class="conversation-time">
+                            {{ item.last_message.created_at|date:"M j, H:i" }}
+                        </span>
                     {% endif %}
+
                     {% if item.unread_count %}
-                        <span class="unread-badge">{{ item.unread_count }}</span>
+                        <span class="unread-badge">
+                            {{ item.unread_count }}
+                        </span>
                     {% endif %}
                 </div>
             </a>
@@ -65,8 +90,13 @@
             <div class="messaging-empty">
                 <div class="messaging-empty-icon">✉️</div>
                 <h2>No conversations yet</h2>
-                <p>When someone accepts your handshake, you can message each other here.</p>
-                <a class="messaging-back" href="{% url 'feed' %}">← Back to feed</a>
+                <p>
+                    When someone accepts your handshake, you can message
+                    each other here.
+                </p>
+                <a class="messaging-back" href="{% url 'feed' %}">
+                    ← Back to feed
+                </a>
             </div>
         {% endfor %}
     </section>
