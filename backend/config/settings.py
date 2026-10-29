@@ -21,13 +21,19 @@ SECRET_KEY = "django-insecure-@xav+zkzxe8v93fjrp^fkg5a+c(!o1@l^s(7=^=#m-t9%^c*sb
 DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "::1", "testserver"]
 
+
 INSTALLED_APPS = [
+    
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    "channels",  # Third-party Django Channels library
+
     "core",
     "users",
     "profiles",
@@ -37,11 +43,14 @@ INSTALLED_APPS = [
     "notifications",
     "ai_studio",
     "events",
-    'publish',
-    'vibespace',
+    "publish",
+    "vibespace",
+    "bxb_channels.apps.ChannelsConfig",  # Your BXB Communities app
     "chat.apps.ChatConfig",
-
 ]
+
+
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -118,3 +127,17 @@ NOTIFICATIONS_EMAIL_ENABLED = False
 
 # Used to build links inside notification emails.
 SITE_URL = "http://localhost:8000"
+
+
+
+# ----------------------------------------------------------------------
+# WEBSOCKET CHAT (Django Channels)
+# ----------------------------------------------------------------------
+
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
