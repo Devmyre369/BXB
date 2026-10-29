@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from handshake.models import Handshake
 from profiles.models import Follow
 from vibespace.models import Vibe, VibeComment, VibeLike, VibeRepost
 
@@ -105,6 +106,20 @@ class MainFeedTests(TestCase):
         )
         Follow.objects.create(follower=follower, following=self.user)
         Follow.objects.create(follower=self.user, following=following)
+        connection = get_user_model().objects.create_user(
+            username="connection",
+            email="connection@example.com",
+        )
+        Handshake.objects.create(
+            sender=connection,
+            receiver=self.user,
+            status=Handshake.Status.ACCEPTED,
+        )
+        Handshake.objects.create(
+            sender=self.user,
+            receiver=connection,
+            status=Handshake.Status.ACCEPTED,
+        )
         Post.objects.create(author=self.user, content="Profile post")
 
         response = self.client.get(reverse("feed"))
@@ -116,8 +131,19 @@ class MainFeedTests(TestCase):
         self.assertContains(response, "Your Profile")
         self.assertEqual(
             response.context["profile_stats"],
-            {"posts": 1, "followers": 1, "following": 1},
+            {"posts": 1, "followers": 1, "following": 1, "connections": 1},
         )
+        for route_name in (
+            "user_posts",
+            "followers_list",
+            "following_list",
+            "connections_list",
+        ):
+            with self.subTest(route_name=route_name):
+                self.assertContains(
+                    response,
+                    reverse(route_name, args=[self.user.username]),
+                )
 
     def test_home_feed_rejects_post_requests_without_creating_vibes(self):
         response = self.client.post(

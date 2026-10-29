@@ -70,6 +70,13 @@
         line-height: 1.6;
     }
 
+    .notification-header-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
     .mark-all-button {
         min-height: 36px;
         padding: 0 13px;
@@ -376,8 +383,17 @@
             font-size: 25px;
         }
 
+        .notification-header-actions {
+            flex-wrap: nowrap;
+            gap: 7px;
+        }
+
         .mark-all-button {
-            width: 100%;
+            width: auto;
+            min-height: 30px;
+            padding: 0 10px;
+            font-size: 10px;
+            white-space: nowrap;
         }
 
         .notification-item {
@@ -447,7 +463,7 @@
             </p>
         </div>
 
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <div class="notification-header-actions">
             <a
                 href="{% url 'notification_preferences' %}"
                 class="mark-all-button"

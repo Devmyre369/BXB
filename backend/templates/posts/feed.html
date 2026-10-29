@@ -376,6 +376,22 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.profile-stat-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.profile-stat-link:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
+}
+
+.profile-stat-link:focus-visible {
+    outline: 2px solid var(--blue-light, var(--blue));
+    outline-offset: 2px;
+}
+
 .post-menu {
     flex-shrink: 0;
     width: 32px;
@@ -3203,22 +3219,22 @@
             </div>
 
             <div class="stats-grid profile-stats-grid">
-                <div class="stat-box">
+                <a class="stat-box profile-stat-link" href="{% url 'user_posts' user.username %}">
                     <div class="stat-number">{{ profile_stats.posts }}</div>
                     <div class="stat-label">Posts</div>
-                </div>
-                <div class="stat-box">
+                </a>
+                <a class="stat-box profile-stat-link" href="{% url 'followers_list' user.username %}">
                     <div class="stat-number">{{ profile_stats.followers }}</div>
                     <div class="stat-label">Followers</div>
-                </div>
-                <div class="stat-box">
+                </a>
+                <a class="stat-box profile-stat-link" href="{% url 'following_list' user.username %}">
                     <div class="stat-number">{{ profile_stats.following }}</div>
                     <div class="stat-label">Following</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number">BxB</div>
-                    <div class="stat-label">Network</div>
-                </div>
+                </a>
+                <a class="stat-box profile-stat-link" href="{% url 'connections_list' user.username %}">
+                    <div class="stat-number">{{ profile_stats.connections }}</div>
+                    <div class="stat-label">Connections</div>
+                </a>
             </div>
 
         </div>

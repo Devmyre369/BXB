@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET
 
+from handshake.models import Handshake
 from profiles.models import Follow
 from vibespace.models import Vibe, VibeLike, VibeRepost
 from notifications.models import Notification
@@ -56,6 +58,22 @@ def feed(request):
         ).values_list("following_id", flat=True)
     )
 
+    connection_count = (
+        user.__class__.objects.filter(
+            Q(
+                received_handshakes__sender=user,
+                received_handshakes__status=Handshake.Status.ACCEPTED,
+            )
+            | Q(
+                sent_handshakes__receiver=user,
+                sent_handshakes__status=Handshake.Status.ACCEPTED,
+            )
+        )
+        .exclude(pk=user.pk)
+        .distinct()
+        .count()
+    )
+
     feed_items = [
         {"type": "vibe", "object": vibe}
         for vibe in vibes
@@ -73,6 +91,7 @@ def feed(request):
                 "posts": user.posts.count(),
                 "followers": user.followers.count(),
                 "following": user.following.count(),
+                "connections": connection_count,
             },
         }
     )
