@@ -106,6 +106,63 @@
 
 }
 
+.feed-create-vibe-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 14px;
+
+    margin-bottom: 18px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    background: var(--card-bg, var(--surface, transparent));
+
+    color: var(--text-primary);
+
+    text-decoration: none;
+
+    transition: border-color var(--transition);
+
+}
+
+.feed-create-vibe-card:hover {
+
+    border-color: var(--blue);
+
+}
+
+.feed-create-vibe-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 36px;
+
+    height: 36px;
+
+    border-radius: 50%;
+
+    background: var(--blue-light, var(--blue));
+
+    color: #fff;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    flex-shrink: 0;
+
+}
 
 
 .feed-status {
@@ -2101,12 +2158,6 @@
 
             <h1 class="feed-title">Community Feed</h1>
 
-            <p class="feed-subtitle">
-
-                See what builders, creators and students are sharing.
-
-            </p>
-
         </div>
 
 
@@ -2122,6 +2173,28 @@
     </div>
 
 </div>
+
+<!-- CREATE A VIBE CARD -->
+
+
+
+<a href="{% url 'vibespace:create' %}" class="feed-create-vibe-card">
+
+    <div class="feed-create-vibe-icon">+</div>
+
+    <div class="feed-my-profile-info">
+
+        <div class="feed-my-profile-title">Share a Vibe</div>
+
+        <div class="feed-my-profile-subtitle">A thought, a meme, a photo, or a video. Make it yours.</div>
+
+    </div>
+
+    <span class="feed-profile-arrow" aria-hidden="true">&#8594;</span>
+
+</a>
+
+
 
 <!-- MY PROFILE SHORTCUT -->
 
