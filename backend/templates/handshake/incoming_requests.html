@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="handshake-page">
+    <h1>Incoming Requests</h1>
+    <p>People who want to connect with you on BXB.</p>
+
+    {% for handshake in handshakes %}
+        <article class="handshake-card">
+            <div>
+                <h3>{{ handshake.sender.username }}</h3>
+                <p>Sent {{ handshake.created_at|date:"M d, Y" }}</p>
+                <a href="{% url 'public_profile' username=handshake.sender.username %}">
+                    View profile
+                </a>
+            </div>
+
+            <div class="handshake-actions">
+                <form method="post"
+                      action="{% url 'accept_handshake' handshake_id=handshake.id %}"
+                      class="handshake-action-form">
+                    {% csrf_token %}
+                    <button type="submit" class="handshake-accept">
+                        Accept
+                    </button>
+                </form>
+
+                <form method="post"
+                      action="{% url 'reject_handshake' handshake_id=handshake.id %}"
+                      class="handshake-action-form">
+                    {% csrf_token %}
+                    <button type="submit" class="handshake-reject">
+                        Decline
+                    </button>
+                </form>
+            </div>
+        </article>
+    {% empty %}
+        <div class="handshake-empty">
+            <h3>No incoming requests</h3>
+            <p>When someone wants to connect with you, their request will appear here.</p>
+        </div>
+    {% endfor %}
+
+    <p class="handshake-status" aria-live="polite"></p>
+</section>
+{% endblock %}

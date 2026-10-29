@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="handshake-page">
+    <h1>My Connections</h1>
+    <p>People you've connected with on BXB.</p>
+
+    {% for connection in connections %}
+        <article class="handshake-card">
+            <div>
+                <h3>{{ connection.user.username }}</h3>
+                <p>Connected on {{ connection.handshake.updated_at|date:"M d, Y" }}</p>
+                <a href="{% url 'public_profile' username=connection.user.username %}">
+                    View profile
+                </a>
+            </div>
+
+            <a class="handshake-accept"
+               href="{% url 'public_profile' username=connection.user.username %}">
+                View connection
+            </a>
+        </article>
+    {% empty %}
+        <div class="handshake-empty">
+            <h3>No connections yet</h3>
+            <p>Accept a request or send one to start building your network.</p>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

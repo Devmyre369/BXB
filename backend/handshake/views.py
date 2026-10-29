@@ -4,11 +4,14 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
+import logging
 
+from django.db.models import Q
+from django.shortcuts import render
 from users.models import User
 from notifications.models import Notification
 from notifications.services import notify
-
+from django.shortcuts import render
 from .models import Handshake
 
 
@@ -312,3 +315,76 @@ def cancel_handshake(request, handshake_id):
             "An internal error occurred while cancelling the handshake.",
             status=500,
         )
+
+@login_required
+def incoming_requests(request):
+    """Display pending handshake requests received by the user."""
+    handshakes = (
+        Handshake.objects
+        .filter(
+            receiver=request.user,
+            status=Handshake.Status.PENDING,
+        )
+        .select_related("sender")
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "handshake/incoming_requests.html",
+        {"handshakes": handshakes},
+    )
+
+
+@login_required
+def sent_requests(request):
+    """Display pending handshake requests sent by the user."""
+    handshakes = (
+        Handshake.objects
+        .filter(
+            sender=request.user,
+            status=Handshake.Status.PENDING,
+        )
+        .select_related("receiver")
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "handshake/sent_requests.html",
+        {"handshakes": handshakes},
+    )
+
+
+@login_required
+def my_connections(request):
+    """Display all accepted handshake connections."""
+    handshakes = (
+        Handshake.objects
+        .filter(
+            Q(sender=request.user) | Q(receiver=request.user),
+            status=Handshake.Status.ACCEPTED,
+        )
+        .select_related("sender", "receiver")
+        .order_by("-updated_at")
+    )
+
+    connections = []
+
+    for handshake in handshakes:
+        connected_user = (
+            handshake.receiver
+            if handshake.sender_id == request.user.id
+            else handshake.sender
+        )
+
+        connections.append({
+            "user": connected_user,
+            "handshake": handshake,
+        })
+
+    return render(
+        request,
+        "handshake/my_connections.html",
+        {"connections": connections},
+    )
