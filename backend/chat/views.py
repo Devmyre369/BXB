@@ -307,11 +307,23 @@ from users.models import User
 from handshake.models import Handshake
 from .models import Message
 
+'''
+def get_accepted_handshake(user_a, user_b):
+    """Return the accepted handshake between two users."""
+    return (
+        Handshake.objects.filter(status="accepted")
+        .filter(
+            Q(sender=user_a, receiver=user_b)
+            | Q(sender=user_b, receiver=user_a)
+        )
+        .first()
+    )
+    '''
 
 def get_accepted_handshake(user_a, user_b):
     """Return the accepted handshake between two users."""
     return (
-        Handshake.objects.filter(status=Handshake.Status.ACCEPTED)
+        Handshake.objects.filter(status="accepted")
         .filter(
             Q(sender=user_a, receiver=user_b)
             | Q(sender=user_b, receiver=user_a)
@@ -319,19 +331,17 @@ def get_accepted_handshake(user_a, user_b):
         .first()
     )
 
-
 @login_required
 def inbox(request):
     """Display accepted connections and their latest messages."""
     handshakes = (
-        Handshake.objects.filter(
-            Q(sender=request.user) | Q(receiver=request.user),
-            status=Handshake.Status.ACCEPTED,
-        )
-        .select_related("sender", "receiver")
-        .order_by("-updated_at")
+    Handshake.objects.filter(
+        Q(sender=request.user) | Q(receiver=request.user),
+        status="accepted",
     )
-
+    .select_related("sender", "receiver")
+    .order_by("-updated_at")
+)
     conversations = []
     seen_user_ids = set()
 
