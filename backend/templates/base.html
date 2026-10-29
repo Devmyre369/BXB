@@ -2961,6 +2961,21 @@
                 {% if user.is_authenticated %}
 
                 <a
+                    href="{% url 'chat:inbox' %}"
+                    class="
+                        nav-item
+                        {% if request.resolver_match.namespace == 'chat' %}
+                            active
+                        {% endif %}
+                    "
+                    aria-label="Chats"
+                    title="Chats"
+                >
+                    <span class="nav-item-icon" aria-hidden="true">✉</span>
+                    <span class="nav-item-label">Chats</span>
+                </a>
+
+                <a
                     href="{% url 'profiles:my_profile' %}"
                     class="
                         nav-item
@@ -3339,6 +3354,16 @@
 
 
                 {% if user.is_authenticated %}
+
+                <!-- Chats -->
+                <a
+                    href="{% url 'chat:inbox' %}"
+                    class="topbar-icon-button {% if request.resolver_match.namespace == 'chat' %}active{% endif %}"
+                    title="Chats"
+                    aria-label="Chats"
+                >
+                    <span aria-hidden="true">✉</span>
+                </a>
 
 
                 <!-- Notifications -->
