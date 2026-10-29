@@ -229,6 +229,12 @@ class Notification(models.Model):
     def get_target_url(self):
         """Best link for this notification, or '' if none applies."""
         T = self.NotificationType
+        if self.notification_type == T.MESSAGE:
+            if self.actor_id:
+                return reverse(
+                "chat:conversation",
+                args=[self.actor.username],
+        )
         try:
             if self.vibe_id:
                 return reverse("vibespace:detail", args=[self.vibe_id])

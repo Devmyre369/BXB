@@ -302,10 +302,11 @@ from django.contrib import messages as django_messages
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
-
+from datetime import timedelta
 from users.models import User
 from handshake.models import Handshake
 from .models import Message
+from notifications.models import Notification, NotificationPreference
 
 '''
 def get_accepted_handshake(user_a, user_b):
@@ -320,6 +321,22 @@ def get_accepted_handshake(user_a, user_b):
     )
     '''
 
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages as django_messages
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods
+
+from handshake.models import Handshake
+from notifications.models import Notification, NotificationPreference
+from .models import Message
+
+
+User = get_user_model()
+
+
 def get_accepted_handshake(user_a, user_b):
     """Return the accepted handshake between two users."""
     return (
@@ -331,17 +348,19 @@ def get_accepted_handshake(user_a, user_b):
         .first()
     )
 
+
 @login_required
 def inbox(request):
     """Display accepted connections and their latest messages."""
     handshakes = (
-    Handshake.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user),
-        status="accepted",
+        Handshake.objects.filter(
+            Q(sender=request.user) | Q(receiver=request.user),
+            status="accepted",
+        )
+        .select_related("sender", "receiver")
+        .order_by("-updated_at")
     )
-    .select_related("sender", "receiver")
-    .order_by("-updated_at")
-)
+
     conversations = []
     seen_user_ids = set()
 
@@ -400,7 +419,10 @@ def conversation(request, username):
             request,
             "You can message this person only after they accept your handshake.",
         )
-        return redirect("public_profile", username=other_user.username)
+        return redirect(
+            "public_profile",
+            username=other_user.username,
+        )
 
     if request.method == "POST":
         body = request.POST.get("body", "").strip()
@@ -424,11 +446,28 @@ def conversation(request, username):
             message.full_clean()
             message.save()
 
+            # Respect the recipient's in-app message notification preference.
+            preference = NotificationPreference.objects.filter(
+                user=other_user,
+                notification_type=Notification.NotificationType.MESSAGE,
+            ).first()
+
+            # If no preference exists, in-app notifications are enabled by default.
+            if preference is None or preference.in_app:
+                Notification.objects.create(
+                    recipient=other_user,
+                    actor=request.user,
+                    notification_type=Notification.NotificationType.MESSAGE,
+                    message=f"{request.user.username} sent you a message.",
+                    handshake=handshake,
+                )
+
             return redirect(
                 "chat:conversation",
                 username=other_user.username,
             )
 
+    # Mark incoming messages as read when the recipient opens the conversation.
     Message.objects.filter(
         handshake=handshake,
         recipient=request.user,
