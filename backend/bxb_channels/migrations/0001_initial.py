@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='channel_announcements', to=settings.AUTH_USER_MODEL)),
-                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='announcements', to='channels.channel')),
+                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='announcements', to='bxb_channels.channel')),
             ],
             options={
                 'ordering': ['-created_at'],
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role', models.CharField(choices=[('admin', 'Admin'), ('member', 'Member')], default='member', max_length=10)),
                 ('joined_at', models.DateTimeField(auto_now_add=True)),
-                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to='channels.channel')),
+                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to='bxb_channels.channel')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='channel_memberships', to=settings.AUTH_USER_MODEL)),
             ],
             options={
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='channel',
             name='members',
-            field=models.ManyToManyField(related_name='joined_channels', through='channels.ChannelMembership', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(related_name='joined_channels', through='bxb_channels.ChannelMembership', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddConstraint(
             model_name='channelmembership',

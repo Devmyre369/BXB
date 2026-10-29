@@ -1,3 +1,4 @@
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
@@ -138,21 +139,16 @@ def public_profile(request, username):
             handshake_status = "rejected"
             handshake_id = sent_handshake.id
 
-    # Profile connection counts.
-    connection_count = (
-        Handshake.objects.filter(
-            Q(sender=profile_user) | Q(receiver=profile_user),
-            status="accepted",
-        )
-        .count()
-    )
+    # Count accepted connections for this profile.
+    connection_count = Handshake.objects.filter(
+        Q(sender=profile_user) | Q(receiver=profile_user),
+        status="accepted",
+    ).count()
 
-    handshake_count = (
-        Handshake.objects.filter(
-            Q(sender=profile_user) | Q(receiver=profile_user)
-        )
-        .count()
-    )
+    # Count all handshake records involving this profile.
+    handshake_count = Handshake.objects.filter(
+        Q(sender=profile_user) | Q(receiver=profile_user)
+    ).count()
 
     return render(
         request,
@@ -268,21 +264,24 @@ def following_list(request, username):
     )
 
 
+@login_required
 def connections_list(request, username):
     profile_user = get_object_or_404(
         User,
         username=username,
     )
 
+    # Find users connected to this profile through
+    # accepted handshakes, using the actual related names.
     connections = (
         User.objects.filter(
             Q(
-                handshakes_received__sender=profile_user,
-                handshakes_received__status="accepted",
+                received_handshakes__sender=profile_user,
+                received_handshakes__status="accepted",
             )
             | Q(
-                handshakes_sent__receiver=profile_user,
-                handshakes_sent__status="accepted",
+                sent_handshakes__receiver=profile_user,
+                sent_handshakes__status="accepted",
             )
         )
         .exclude(id=profile_user.id)
