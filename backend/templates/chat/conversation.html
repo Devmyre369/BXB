@@ -48,11 +48,9 @@
                 <div class="chat-name">
                     {{ other_user.get_full_name|default:other_user.username }}
                 </div>
-                <div class="chat-username">
-                    @{{ other_user.username }}
-                </div>
-                <div class="chat-status">
-                    Connected on BXB
+                <div class="chat-username">@{{ other_user.username }}</div>
+                <div class="chat-status" id="chatStatus" role="status" aria-live="polite">
+                    Connecting to chat...
                 </div>
             </div>
         </header>
@@ -63,9 +61,10 @@
             {% endfor %}
         {% endif %}
 
-        <div class="chat-messages" id="chatMessages">
+        <div class="chat-messages" id="chatMessages" aria-live="polite">
             {% for message in conversation_messages %}
-                <div class="message-row{% if message.sender_id == request.user.id %} mine{% endif %}">
+                <div class="message-row{% if message.sender_id == request.user.id %} mine{% endif %}"
+                     data-message-id="{{ message.id }}">
                     <div class="message-bubble">{{ message.body }}</div>
                     <div class="message-time">
                         {{ message.created_at|date:"M j, H:i" }}
@@ -96,46 +95,263 @@
                     aria-label="Message"
                 ></textarea>
 
-                <button class="chat-send" id="chatSend" type="submit">
-                    Send
+                <button class="chat-send" id="chatSend" type="submit" disabled>
+                    Connecting...
                 </button>
             </form>
-            <p class="chat-hint">Enter to send · Shift + Enter for a new line</p>
+            <p class="chat-hint" id="chatHint">
+                Enter to send · Shift + Enter for a new line
+            </p>
         </div>
     </section>
 </main>
 
 <script>
 (function () {
+    "use strict";
+
     const messages = document.getElementById("chatMessages");
     const form = document.getElementById("chatForm");
     const input = document.getElementById("chatInput");
     const send = document.getElementById("chatSend");
+    const status = document.getElementById("chatStatus");
+    const hint = document.getElementById("chatHint");
 
-    if (messages) {
+    if (!messages || !form || !input || !send || !status) return;
+
+    const handshakeId = "{{ handshake.id|escapejs }}";
+    const currentUserId = Number("{{ request.user.id }}");
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const socketUrl =
+        `${protocol}//${window.location.host}/ws/chat/${encodeURIComponent(handshakeId)}/`;
+
+    let socket = null;
+    let reconnectTimer = null;
+    let reconnectAttempts = 0;
+    let manuallyClosed = false;
+    let sending = false;
+
+    function setStatus(message) {
+        status.textContent = message;
+    }
+
+    function scrollToBottom() {
         messages.scrollTop = messages.scrollHeight;
     }
 
-    if (input && form && send) {
-        input.addEventListener("keydown", function (event) {
-            if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
-                event.preventDefault();
+    function showError(message) {
+        const error = document.createElement("div");
+        error.className = "chat-error";
+        error.setAttribute("role", "status");
+        error.textContent = message;
+        messages.appendChild(error);
+        scrollToBottom();
+    }
 
-                if (input.value.trim() && !send.disabled) {
-                    form.requestSubmit();
-                }
-            }
-        });
+    function renderMessage(data) {
+        if (!data || data.id == null || typeof data.body !== "string") {
+            return;
+        }
 
-        form.addEventListener("submit", function () {
-            if (!input.value.trim()) {
+        // The same group message reaches both participants. Ignore duplicates.
+        if (messages.querySelector(`[data-message-id="${data.id}"]`)) {
+            return;
+        }
+
+        const empty = messages.querySelector(".chat-empty");
+        if (empty) empty.remove();
+
+        const row = document.createElement("div");
+        row.className = "message-row" +
+            (Number(data.sender_id) === currentUserId ? " mine" : "");
+        row.dataset.messageId = data.id;
+
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble";
+        bubble.textContent = data.body;
+
+        const time = document.createElement("div");
+        time.className = "message-time";
+
+        const date = new Date(data.created_at);
+        time.textContent = Number.isNaN(date.getTime())
+            ? ""
+            : date.toLocaleString([], {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+
+        row.appendChild(bubble);
+        row.appendChild(time);
+        messages.appendChild(row);
+        scrollToBottom();
+    }
+
+    function updateConnectionState(connected) {
+        send.disabled = !connected || sending;
+        send.textContent = connected ? "Send" : "Reconnecting...";
+        input.disabled = false;
+
+        if (connected) {
+            setStatus("Connected · Ready to chat");
+            hint.textContent = "Enter to send · Shift + Enter for a new line";
+        }
+    }
+
+    function connect() {
+        if (manuallyClosed) return;
+
+        setStatus("Connecting to chat...");
+
+        try {
+            socket = new WebSocket(socketUrl);
+        } catch (error) {
+            scheduleReconnect();
+            return;
+        }
+
+        socket.onopen = function () {
+            reconnectAttempts = 0;
+            updateConnectionState(true);
+        };
+
+        socket.onmessage = function (event) {
+            let data;
+
+            try {
+                data = JSON.parse(event.data);
+            } catch (error) {
                 return;
             }
 
+            if (data.type === "connection_established") {
+                return;
+            }
+
+            if (data.type === "message") {
+                renderMessage(data);
+
+                if (
+                    Number(data.sender_id) !== currentUserId &&
+                    socket &&
+                    socket.readyState === WebSocket.OPEN
+                ) {
+                    socket.send(JSON.stringify({ action: "mark_read" }));
+                }
+
+                return;
+            }
+
+            if (data.type === "read_ack") {
+                return;
+            }
+
+            if (data.type === "error") {
+                sending = false;
+                send.disabled = !socket || socket.readyState !== WebSocket.OPEN;
+                showError(data.message || "Unable to send message.");
+                return;
+            }
+        };
+
+        socket.onerror = function () {
+            setStatus("Connection problem. Reconnecting...");
+        };
+
+        socket.onclose = function (event) {
+            sending = false;
             send.disabled = true;
-            send.textContent = "Sending...";
-        });
+
+            if (event.code === 4401 || event.code === 4403) {
+                manuallyClosed = true;
+                send.textContent = "Unavailable";
+                setStatus("Access denied. Sign in again or verify this connection.");
+                return;
+            }
+
+            if (!manuallyClosed) {
+                scheduleReconnect();
+            }
+        };
     }
+
+    function scheduleReconnect() {
+        if (manuallyClosed || reconnectTimer) return;
+
+        reconnectAttempts += 1;
+        const delay = Math.min(1000 * (2 ** Math.min(reconnectAttempts, 5)), 30000);
+
+        send.disabled = true;
+        send.textContent = "Reconnecting...";
+        setStatus("Disconnected. Reconnecting shortly...");
+
+        reconnectTimer = setTimeout(function () {
+            reconnectTimer = null;
+            connect();
+        }, delay);
+    }
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const body = input.value.trim();
+
+        if (!body || body.length > 5000 || sending) return;
+
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            showError("Chat is disconnected. Please wait for reconnection.");
+            return;
+        }
+
+        sending = true;
+        send.disabled = true;
+
+        try {
+            socket.send(JSON.stringify({
+                action: "message",
+                body: body
+            }));
+
+            input.value = "";
+            input.focus();
+        } catch (error) {
+            sending = false;
+            send.disabled = false;
+            showError("Could not send the message. Please try again.");
+        } finally {
+            // Re-enable after the send attempt. The server remains responsible
+            // for validating and persisting the message.
+            sending = false;
+            send.disabled = socket.readyState !== WebSocket.OPEN;
+        }
+    });
+
+    input.addEventListener("keydown", function (event) {
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey &&
+            !event.isComposing
+        ) {
+            event.preventDefault();
+
+            if (!send.disabled && input.value.trim()) {
+                form.requestSubmit();
+            }
+        }
+    });
+
+    window.addEventListener("beforeunload", function () {
+        manuallyClosed = true;
+        clearTimeout(reconnectTimer);
+
+        if (socket) socket.close();
+    });
+
+    scrollToBottom();
+    connect();
 })();
 </script>
 {% endblock %}

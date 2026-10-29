@@ -322,15 +322,19 @@ def get_accepted_handshake(user_a, user_b):
     '''
 
 
+
+from django.contrib import messages as django_messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages as django_messages
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from handshake.models import Handshake
 from notifications.models import Notification, NotificationPreference
+
 from .models import Message
 
 
@@ -338,14 +342,43 @@ User = get_user_model()
 
 
 def get_accepted_handshake(user_a, user_b):
-    """Return the accepted handshake between two users."""
+    """Return an accepted handshake between two different users."""
+    if user_a.pk == user_b.pk:
+        return None
+
     return (
         Handshake.objects.filter(status="accepted")
         .filter(
-            Q(sender=user_a, receiver=user_b)
-            | Q(sender=user_b, receiver=user_a)
+            Q(sender_id=user_a.pk, receiver_id=user_b.pk)
+            | Q(sender_id=user_b.pk, receiver_id=user_a.pk)
         )
+        .select_related("sender", "receiver")
+        .order_by("-updated_at", "-pk")
         .first()
+    )
+
+
+def create_message_notification(sender, recipient, handshake):
+    """
+    Create an in-app notification if the recipient allows message notifications.
+
+    Preserve the existing Notification model and preference behavior.
+    """
+    preference = NotificationPreference.objects.filter(
+        user=recipient,
+        notification_type=Notification.NotificationType.MESSAGE,
+    ).first()
+
+    # In-app notifications are enabled by default when no preference exists.
+    if preference is not None and not preference.in_app:
+        return
+
+    Notification.objects.create(
+        recipient=recipient,
+        actor=sender,
+        notification_type=Notification.NotificationType.MESSAGE,
+        message=f"{sender.username} sent you a message.",
+        handshake=handshake,
     )
 
 
@@ -358,7 +391,7 @@ def inbox(request):
             status="accepted",
         )
         .select_related("sender", "receiver")
-        .order_by("-updated_at")
+        .order_by("-updated_at", "-pk")
     )
 
     conversations = []
@@ -367,18 +400,19 @@ def inbox(request):
     for handshake in handshakes:
         other_user = (
             handshake.receiver
-            if handshake.sender_id == request.user.id
+            if handshake.sender_id == request.user.pk
             else handshake.sender
         )
 
-        if other_user.id in seen_user_ids:
+        # Avoid duplicate inbox entries if reciprocal handshakes exist.
+        if other_user.pk in seen_user_ids:
             continue
 
-        seen_user_ids.add(other_user.id)
+        seen_user_ids.add(other_user.pk)
 
         last_message = (
             Message.objects.filter(handshake=handshake)
-            .order_by("-created_at", "-id")
+            .order_by("-created_at", "-pk")
             .first()
         )
 
@@ -405,10 +439,14 @@ def inbox(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def conversation(request, username):
-    """Display a conversation and handle sending messages."""
+    """
+    Render a conversation and retain HTTP message sending as a fallback.
+
+    The WebSocket consumer handles live delivery for the new chat interface.
+    """
     other_user = get_object_or_404(User, username=username)
 
-    if other_user == request.user:
+    if other_user.pk == request.user.pk:
         django_messages.error(request, "You cannot message yourself.")
         return redirect("chat:inbox")
 
@@ -437,37 +475,48 @@ def conversation(request, username):
             )
 
         else:
-            message = Message(
-                handshake=handshake,
-                sender=request.user,
-                recipient=other_user,
-                body=body,
-            )
-            message.full_clean()
-            message.save()
+            try:
+                with transaction.atomic():
+                    # Recheck the connection immediately before saving.
+                    valid_connection = Handshake.objects.filter(
+                        pk=handshake.pk,
+                        status="accepted",
+                    ).exists()
 
-            # Respect the recipient's in-app message notification preference.
-            preference = NotificationPreference.objects.filter(
-                user=other_user,
-                notification_type=Notification.NotificationType.MESSAGE,
-            ).first()
+                    if not valid_connection:
+                        django_messages.error(
+                            request,
+                            "This connection is no longer active.",
+                        )
+                        return redirect("chat:inbox")
 
-            # If no preference exists, in-app notifications are enabled by default.
-            if preference is None or preference.in_app:
-                Notification.objects.create(
-                    recipient=other_user,
-                    actor=request.user,
-                    notification_type=Notification.NotificationType.MESSAGE,
-                    message=f"{request.user.username} sent you a message.",
-                    handshake=handshake,
+                    message = Message(
+                        handshake=handshake,
+                        sender=request.user,
+                        recipient=other_user,
+                        body=body,
+                    )
+                    message.full_clean()
+                    message.save()
+
+                    create_message_notification(
+                        sender=request.user,
+                        recipient=other_user,
+                        handshake=handshake,
+                    )
+
+            except ValidationError:
+                django_messages.error(
+                    request,
+                    "The message could not be validated. Please try again.",
+                )
+            else:
+                return redirect(
+                    "chat:conversation",
+                    username=other_user.username,
                 )
 
-            return redirect(
-                "chat:conversation",
-                username=other_user.username,
-            )
-
-    # Mark incoming messages as read when the recipient opens the conversation.
+    # Mark incoming messages as read when the conversation page is opened.
     Message.objects.filter(
         handshake=handshake,
         recipient=request.user,
@@ -477,7 +526,7 @@ def conversation(request, username):
     conversation_messages = (
         Message.objects.filter(handshake=handshake)
         .select_related("sender", "recipient")
-        .order_by("created_at", "id")
+        .order_by("created_at", "pk")
     )
 
     return render(

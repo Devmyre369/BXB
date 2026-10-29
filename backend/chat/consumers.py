@@ -3,60 +3,43 @@ import logging
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils import timezone
 
 from handshake.models import Handshake
-from notifications.models import Notification
 from notifications.services import notify_message
 
 from .models import Message
 
 logger = logging.getLogger(__name__)
 
-User = get_user_model()
-
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
-    """
-    Authenticated, one-to-one WebSocket chat.
-
-    The handshake ID identifies the conversation. Only its two participants
-    can connect, and only while the handshake is accepted.
-    """
-
     async def connect(self):
         self.user = self.scope["user"]
-        self.handshake_id = self.scope["url_route"]["kwargs"].get(
-            "handshake_id"
-        )
+        self.handshake_id = self.scope["url_route"]["kwargs"]["handshake_id"]
+        self.group_name = f"chat_handshake_{self.handshake_id}"
 
         if not self.user.is_authenticated:
             await self.close(code=4401)
             return
 
-        self.handshake = await self.get_valid_handshake()
+        handshake = await self.get_accepted_handshake()
 
-        if self.handshake is None:
+        if handshake is None:
             await self.close(code=4403)
             return
-
-        self.group_name = f"chat_handshake_{self.handshake_id}"
 
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name,
         )
+
         await self.accept()
 
-        # Opening the conversation marks incoming messages as read.
+        # Mark messages addressed to this user as read on opening the chat.
         await self.mark_messages_read()
-
-        await self.send_json({
-            "type": "connection_established",
-            "handshake_id": self.handshake_id,
-            "user_id": self.user.pk,
-        })
 
     async def disconnect(self, close_code):
         if hasattr(self, "group_name"):
@@ -69,59 +52,76 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         action = content.get("action")
 
         if action == "message":
-            body = content.get("body", "")
-
-            if not isinstance(body, str):
-                await self.send_error("Message body must be text.")
-                return
-
-            body = body.strip()
-
-            if not body:
-                await self.send_error("Message cannot be empty.")
-                return
-
-            if len(body) > 5000:
-                await self.send_error(
-                    "Messages must be 5,000 characters or fewer."
-                )
-                return
-
-            # Recheck authorization on every send, not just at connection.
-            recipient_id = await self.get_other_participant_id()
-
-            if recipient_id is None:
-                await self.send_error(
-                    "This conversation is no longer available."
-                )
-                await self.close(code=4403)
-                return
-
-            message_data = await self.save_message(
-                recipient_id=recipient_id,
-                body=body,
-            )
-
-            if message_data is None:
-                await self.send_error(
-                    "The message could not be saved."
-                )
-                return
-
-            await self.channel_layer.group_send(
-                self.group_name,
-                {
-                    "type": "chat.message",
-                    "message": message_data,
-                },
-            )
-
+            await self.handle_message(content)
         elif action == "mark_read":
             await self.mark_messages_read()
-            await self.send_json({"type": "read_ack"})
-
+            await self.send_json({"type": "read", "success": True})
         else:
-            await self.send_error("Unknown chat action.")
+            await self.send_json({
+                "type": "error",
+                "message": "Unknown chat action.",
+            })
+
+    async def handle_message(self, content):
+        body = content.get("body", "")
+
+        if not isinstance(body, str):
+            await self.send_error("Message body must be text.")
+            return
+
+        body = body.strip()
+
+        if not body:
+            await self.send_error("Message cannot be empty.")
+            return
+
+        if len(body) > 5000:
+            await self.send_error(
+                "Messages must be 5,000 characters or fewer."
+            )
+            return
+
+        try:
+            message, recipient = await self.create_message(body)
+        except PermissionError:
+            await self.send_error(
+                "Messaging requires an accepted handshake."
+            )
+            await self.close(code=4403)
+            return
+        except ValidationError as exc:
+            await self.send_error("; ".join(exc.messages))
+            return
+        except Exception:
+            logger.exception("Failed to create a chat message")
+            await self.send_error(
+                "Could not send your message. Please try again."
+            )
+            return
+
+        # Notifications must not prevent a saved message from being delivered.
+        try:
+            await self.create_message_notification(message, recipient)
+        except Exception:
+            logger.exception(
+                "Message saved, but its notification could not be created"
+            )
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "chat.message",
+                "message": {
+                    "id": message.pk,
+                    "sender_id": message.sender_id,
+                    "sender_username": message.sender.username,
+                    "recipient_id": message.recipient_id,
+                    "body": message.body,
+                    "created_at": message.created_at.isoformat(),
+                    "is_read": message.is_read,
+                },
+            },
+        )
 
     async def chat_message(self, event):
         await self.send_json({
@@ -136,13 +136,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         })
 
     @database_sync_to_async
-    def get_valid_handshake(self):
+    def get_accepted_handshake(self):
         try:
-            handshake = Handshake.objects.get(
-                pk=self.handshake_id,
-                status=Handshake.Status.ACCEPTED,
+            handshake = (
+                Handshake.objects
+                .select_related("sender", "receiver")
+                .get(
+                    pk=self.handshake_id,
+                    status=Handshake.Status.ACCEPTED,
+                )
             )
-        except (Handshake.DoesNotExist, ValueError, TypeError):
+        except Handshake.DoesNotExist:
             return None
 
         if self.user.pk not in (
@@ -154,30 +158,33 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return handshake
 
     @database_sync_to_async
-    def get_other_participant_id(self):
-        try:
-            handshake = Handshake.objects.get(
-                pk=self.handshake_id,
-                status=Handshake.Status.ACCEPTED,
-            )
-        except (Handshake.DoesNotExist, ValueError, TypeError):
-            return None
+    def create_message(self, body):
+        with transaction.atomic():
+            try:
+                handshake = (
+                    Handshake.objects
+                    .select_related("sender", "receiver")
+                    .get(
+                        pk=self.handshake_id,
+                        status=Handshake.Status.ACCEPTED,
+                    )
+                )
+            except Handshake.DoesNotExist:
+                raise PermissionError(
+                    "The handshake is no longer accepted."
+                )
 
-        if handshake.sender_id == self.user.pk:
-            return handshake.receiver_id
-
-        if handshake.receiver_id == self.user.pk:
-            return handshake.sender_id
-
-        return None
-
-    @database_sync_to_async
-    def save_message(self, recipient_id, body):
-        try:
-            recipient = User.objects.get(pk=recipient_id)
+            if self.user.pk == handshake.sender_id:
+                recipient = handshake.receiver
+            elif self.user.pk == handshake.receiver_id:
+                recipient = handshake.sender
+            else:
+                raise PermissionError(
+                    "You are not a participant in this handshake."
+                )
 
             message = Message(
-                handshake_id=self.handshake_id,
+                handshake=handshake,
                 sender=self.user,
                 recipient=recipient,
                 body=body,
@@ -185,40 +192,36 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             message.full_clean()
             message.save()
 
-            # Use BXB's centralized notification service so user preferences
-            # and optional email delivery are respected.
-            notify_message(
-                sender=self.user,
-                recipient=recipient,
-                preview=body[:80],
-                target=message,
-            )
+        return message, recipient
 
-            return {
-                "id": message.pk,
-                "handshake_id": message.handshake_id,
-                "sender_id": message.sender_id,
-                "sender_username": self.user.get_username(),
-                "recipient_id": message.recipient_id,
-                "body": message.body,
-                "created_at": message.created_at.isoformat(),
-                "is_read": message.is_read,
-            }
-
-        except (User.DoesNotExist, ValueError):
-            logger.warning("Unable to save WebSocket chat message.")
-            return None
-        except Exception:
-            logger.exception("Unexpected error saving WebSocket message.")
-            return None
+    @database_sync_to_async
+    def create_message_notification(self, message, recipient):
+        return notify_message(
+            sender=message.sender,
+            recipient=recipient,
+            preview=message.body[:80],
+            target=message,
+        )
 
     @database_sync_to_async
     def mark_messages_read(self):
-        if not hasattr(self, "handshake_id"):
+        # Only mark messages belonging to this accepted handshake,
+        # addressed to the authenticated user.
+        if not Handshake.objects.filter(
+            pk=self.handshake_id,
+            status=Handshake.Status.ACCEPTED,
+        ).filter(
+            # The authenticated user must be a participant.
+            sender_id=self.user.pk,
+        ).exists() and not Handshake.objects.filter(
+            pk=self.handshake_id,
+            status=Handshake.Status.ACCEPTED,
+            receiver_id=self.user.pk,
+        ).exists():
             return
 
         Message.objects.filter(
             handshake_id=self.handshake_id,
-            recipient=self.user,
+            recipient_id=self.user.pk,
             is_read=False,
         ).update(is_read=True)
