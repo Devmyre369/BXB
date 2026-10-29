@@ -2539,10 +2539,6 @@
         }
 
         @media (max-width: 700px) {
-            .nav-item-profile {
-                display: none;
-            }
-
             .desktop-sidebar-toggle {
                 display: inline-flex;
                 width: 38px;
@@ -2982,7 +2978,7 @@
                 <a
                     href="{% url 'profiles:my_profile' %}"
                     class="
-                        nav-item nav-item-profile
+                        nav-item
                         {% if request.resolver_match.url_name == 'my_profile' %}
                             active
                         {% endif %}
