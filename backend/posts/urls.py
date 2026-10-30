@@ -2,7 +2,6 @@ from django.urls import path
 
 from .views import (
     feed,
-    community_feed,
     delete_post,
     post_detail,
     like_post,
@@ -18,12 +17,6 @@ urlpatterns = [
         '',
         feed,
         name='feed'
-    ),
-
-    path(
-        'community/',
-        community_feed,
-        name='community_feed'
     ),
 
     path(
