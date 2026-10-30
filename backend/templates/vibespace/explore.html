@@ -354,6 +354,18 @@
         text-decoration: none;
     }
 
+    .vibe-card-join {
+        color: var(--ve-open-link);
+        font-size: 11px;
+        font-weight: 800;
+        text-decoration: none;
+        margin-left: 8px;
+    }
+
+    .vibe-card-join:hover {
+        text-decoration: underline;
+    }
+
     .vibe-explore-empty {
         grid-column: 1/-1;
         padding: 65px 20px;
@@ -591,6 +603,13 @@
                             href="{% url 'vibespace:detail' vibe.pk %}"
                             class="vibe-card-open"
                         >View Vibe →</a>
+
+                        {% if vibe.is_campus_event %}
+                            <a
+                                href="{% url 'events:event_list' %}"
+                                class="vibe-card-join"
+                            >Join campus event →</a>
+                        {% endif %}
                     </div>
 
                 </div>

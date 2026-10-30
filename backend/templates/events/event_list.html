@@ -445,7 +445,15 @@
                     <article class="event-card">
 
                         <div class="event-banner">
-                            {% if event.image %}
+                            {% if event.banner %}
+                                <img src="{{ event.banner.url }}"
+                                     alt="{{ event.title }}"
+                                     loading="lazy">
+                            {% elif event.poster %}
+                                <img src="{{ event.poster.url }}"
+                                     alt="{{ event.title }}"
+                                     loading="lazy">
+                            {% elif event.image %}
                                 <img src="{{ event.image }}"
                                      alt="{{ event.title }}"
                                      loading="lazy">

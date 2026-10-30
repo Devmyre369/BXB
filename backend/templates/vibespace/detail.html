@@ -203,6 +203,24 @@
         line-height: 1.7;
     }
 
+    .vibe-event-join-btn {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 6px 12px;
+        border: 1px solid var(--vd-btn-border);
+        border-radius: 8px;
+        color: var(--vd-back-link);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background .2s, border-color .2s;
+    }
+
+    .vibe-event-join-btn:hover {
+        background: var(--vd-btn-hover-bg);
+        border-color: var(--vd-back-link);
+    }
+
     .vibe-detail-sidebar {
         padding: 22px;
     }
@@ -550,6 +568,10 @@
                         {% if vibe.campus_event_name %}
                             <div>{{ vibe.campus_event_name }}</div>
                         {% endif %}
+                        <a
+                            href="{% url 'events:event_list' %}"
+                            class="vibe-event-join-btn"
+                        >Join this campus event →</a>
                     </div>
                 {% endif %}
 
