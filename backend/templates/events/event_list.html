@@ -464,7 +464,11 @@
                     <article class="event-card">
 
                         <div class="event-banner">
-                            {% if event.image %}
+                            {% if event.banner %}
+                                <img src="{{ event.banner.url }}"
+                                     alt="{{ event.title }}"
+                                     loading="lazy">
+                            {% elif event.image %}
                                 <img src="{{ event.image }}"
                                      alt="{{ event.title }}"
                                      loading="lazy">
@@ -557,7 +561,11 @@
                 {% for event in ongoing_events %}
                     <article class="event-card">
                         <div class="event-banner">
-                            {% if event.image %}
+                            {% if event.banner %}
+                                <img src="{{ event.banner.url }}"
+                                     alt="{{ event.title }}"
+                                     loading="lazy">
+                            {% elif event.image %}
                                 <img src="{{ event.image }}"
                                      alt="{{ event.title }}"
                                      loading="lazy">
@@ -616,6 +624,19 @@
             <div class="events-grid">
                 {% for event in past_events %}
                     <article class="event-card">
+                        <div class="event-banner">
+                            {% if event.banner %}
+                                <img src="{{ event.banner.url }}"
+                                     alt="{{ event.title }}"
+                                     loading="lazy">
+                            {% elif event.image %}
+                                <img src="{{ event.image }}"
+                                     alt="{{ event.title }}"
+                                     loading="lazy">
+                            {% else %}
+                                <span aria-hidden="true">&#128197;</span>
+                            {% endif %}
+                        </div>
                         <div class="event-card-content">
                             <div class="event-tags">
                                 <span class="event-tag">Event Concluded</span>
