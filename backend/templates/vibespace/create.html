@@ -291,71 +291,41 @@
 
     <div class="vibe-create-layout">
         <section class="vibe-panel">
-            <h2>{% if is_edit %}Edit your Vibe{% else %}What would you like to share?{% endif %}</h2>
-            <p class="vibe-muted">Choose a format, then create your Vibe.</p>
-
-{% if not is_edit %}
-            <div class="vibe-type-picker" role="group" aria-label="Choose Vibe type">
-                <button type="button" class="vibe-type-option" data-vibe-type="text" aria-pressed="false">
-                    <span class="vibe-type-symbol" aria-hidden="true">T</span>
-                    <strong>Text Vibe</strong>
-                    <small>Thoughts, questions, updates</small>
-                </button>
-                <button type="button" class="vibe-type-option" data-vibe-type="image" aria-pressed="false">
-                    <span class="vibe-type-symbol" aria-hidden="true">▦</span>
-                    <strong>Image Vibe</strong>
-                    <small>Photos, artwork, GIFs</small>
-                </button>
-            </div>
-            <p class="vibe-type-status" id="vibe-type-status" aria-live="polite">Select a Vibe type to get started.</p>
-            {% endif %}
+            <h2>{% if is_edit %}Edit your Vibe{% else %}Create a Vibe{% endif %}</h2>
+            <p class="vibe-muted">Upload an image or GIF with text to create your Vibe.</p>
 
             <form method="post" enctype="multipart/form-data" id="vibe-create-form">
                 {% csrf_token %}
-                <input type="hidden" name="vibe_type" id="vibe-type-input" value="{% if is_edit %}{% if vibe.media %}image{% else %}text{% endif %}{% endif %}">
 
                 {% if form.non_field_errors %}
                     <div class="vibe-error">{{ form.non_field_errors }}</div>
                 {% endif %}
 
-                <div class="vibe-text-type-note" id="vibe-text-type-note" hidden>
-                    Text Vibes are for thoughts, questions, announcements, and updates. Write your message below; no upload is needed.
-                </div>
-
-                <div class="vibe-dropzone" id="vibe-dropzone">
-                    <div class="vibe-upload-icon" aria-hidden="true">↥</div>
-
-                    {% if is_edit %}
-                        <strong>Replace your media (optional)</strong>
-                        <p class="vibe-muted">Leave this empty to keep the current media.</p>
-                    {% else %}
-                        <strong>Add media (optional)</strong>
-                        <p class="vibe-muted">Drop a file here or choose one from your device.</p>
-                        <p class="vibe-muted">For a text-only Vibe, simply write below.</p>
-                    {% endif %}
-
-                    <label for="{{ form.media.id_for_label }}" class="vibe-select-button" id="vibe-select-label">
-                        + Choose media
-                    </label>
-                    {{ form.media }}
-
-                    <span class="vibe-muted">Images and GIFs up to 10 MB</span>
-                    <span class="vibe-file-name" id="vibe-file-name" aria-live="polite"></span>
-                </div>
-
                 {% if form.media.errors %}
                     <div class="vibe-error">{{ form.media.errors }}</div>
                 {% endif %}
 
-                {% if is_edit and vibe.media %}
-                    <p class="vibe-help">Current media</p>
-                    <div class="vibe-preview">
-                        <img src="{{ vibe.media.url }}" alt="Current Vibe media">
-                    </div>
-                {% endif %}
+                <div class="vibe-field">
+                    <label for="{{ form.media.id_for_label }}">Image or GIF *</label>
+                    <div class="vibe-dropzone" id="vibe-dropzone">
+                        <div class="vibe-upload-icon" aria-hidden="true">↥</div>
 
-                <div class="vibe-preview" id="vibe-preview" hidden>
-                    <img id="vibe-preview-image" alt="Selected Vibe preview" hidden>
+                        {% if is_edit %}
+                            <strong>Replace your image or GIF (optional)</strong>
+                            <p class="vibe-muted">Leave this empty to keep the current media.</p>
+                        {% else %}
+                            <strong>Upload image or GIF *</strong>
+                            <p class="vibe-muted">Drop a file here or choose one from your device.</p>
+                        {% endif %}
+
+                        <label for="{{ form.media.id_for_label }}" class="vibe-select-button" id="vibe-select-label">
+                            + Choose media
+                        </label>
+                        {{ form.media }}
+
+                        <span class="vibe-muted">Images and GIFs up to 10 MB</span>
+                        <span class="vibe-file-name" id="vibe-file-name" aria-live="polite"></span>
+                    </div>
                 </div>
 
                 <div class="vibe-field">
@@ -373,7 +343,7 @@
                     </label>
                     {{ form.description }}
                     <p class="vibe-help">
-                        Write your text-only Vibe here, or add context to your photo or video.
+                        Add your text content for this Vibe.
                     </p>
                     {% if form.description.errors %}
                         <div class="vibe-error">{{ form.description.errors }}</div>
@@ -451,13 +421,13 @@
         </section>
 
         <aside class="vibe-panel">
-            <h2>Your space. Your vibe.</h2>
-            <p class="vibe-muted">Help the right people discover what you're sharing.</p>
+            <h2>Image + Text Vibes</h2>
+            <p class="vibe-muted">Every Vibe needs both an image/GIF and text.</p>
 
             <div class="vibe-tips">
                 <div class="vibe-tip">
                     <div class="vibe-tip-icon">▧</div>
-                    <div><strong>Share the story</strong><p>A useful description gives people context beyond the caption.</p></div>
+                    <div><strong>Share the story</strong><p>Add meaningful text to give context to your image.</p></div>
                 </div>
                 <div class="vibe-tip">
                     <div class="vibe-tip-icon">#</div>
@@ -497,14 +467,6 @@
     const dropzone = document.getElementById("vibe-dropzone");
     const publishButton = document.getElementById("vibe-publish-button");
     const captionCount = document.getElementById("caption-count");
-    const typeInput = document.getElementById("vibe-type-input");
-    const typeStatus = document.getElementById("vibe-type-status");
-    const textNote = document.getElementById("vibe-text-type-note");
-    const descriptionLabel = document.getElementById("vibe-description-label");
-    const selectLabel = document.getElementById("vibe-select-label");
-    const typeButtons = Array.from(document.querySelectorAll("[data-vibe-type]"));
-    let previewUrl = null;
-    let selectedType = typeInput.value || "";
 
     function clearPreview() {
         if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -549,9 +511,7 @@
         if (!publishButton || {{ is_edit|yesno:"true,false" }}) return;
         const hasDescription = Boolean((descriptionInput.value || "").trim());
         const hasFile = Boolean(fileInput.files && fileInput.files.length);
-        publishButton.disabled = !selectedType ||
-            !hasDescription ||
-            (selectedType !== "text" && !hasFile);
+        publishButton.disabled = !hasDescription || !hasFile;
     }
 
     function selectType(type) {
@@ -638,35 +598,18 @@
         );
         const hasExistingMedia = isEditing && {{ vibe.media|yesno:"true,false" }};
 
-        if (!hasFile && !hasExistingMedia && !hasText) {
+        if (!hasFile && !hasExistingMedia) {
             event.preventDefault();
             fileName.textContent =
-                "Write something or choose media before publishing.";
-            descriptionInput.focus();
+                "Upload an image or GIF for your Vibe.";
+            if (dropzone) dropzone.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
         }
 
-        if (!isEditing) {
-            if (!descriptionInput.value.trim()) {
-                event.preventDefault();
-                descriptionInput.focus();
-                return;
-            }
-            if (!selectedType) {
-                event.preventDefault();
-                if (typeStatus) typeStatus.textContent = "Please choose Text or Image Vibe first.";
-                return;
-            }
-            if (selectedType === "text" && !(descriptionInput.value || "").trim() && !(captionInput.value || "").trim()) {
-                event.preventDefault();
-                descriptionInput.focus();
-                return;
-            }
-            if (selectedType !== "text" && !fileInput.files.length) {
-                event.preventDefault();
-                fileName.textContent = "Choose a file before publishing.";
-                return;
-            }
+        if (!descriptionInput.value.trim()) {
+            event.preventDefault();
+            descriptionInput.focus();
+            return;
         }
 
         if (eventCheckbox.checked && !eventName.value.trim()) {
@@ -676,11 +619,11 @@
         }
 
         publishButton.disabled = true;
-        publishButton.textContent = isEditing ? "Saving…" : "Publishing…";
+        publishButton.textContent = isEditing ? "Savingâ€¦" : "Publishingâ€¦";
     });
 
     typeButtons.forEach(function (button) {
-        button.addEventListener("click", function () { selectType(button.dataset.vibeType); });
+        button.addEventListener("click", function () { });
     });
 
     captionCount.textContent = captionInput.value.length;
@@ -690,15 +633,8 @@
         showFile(fileInput.files[0]);
     }
 
-    if ({{ is_edit|yesno:"true,false" }}) {
-        if (selectedType) {
-            if (dropzone) dropzone.hidden = selectedType === "text";
-            if (textNote) textNote.hidden = selectedType !== "text";
-            if (selectedType === "image") fileInput.accept = ".jpg,.jpeg,.png,.webp,.gif,image/*";
-        }
-    } else {
-        dropzone.hidden = true;
-        textNote.hidden = true;
+    if (dropzone) {
+        dropzone.hidden = false;
     }
     updatePublishState();
     window.addEventListener("beforeunload", clearPreview);
