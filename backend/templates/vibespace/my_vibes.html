@@ -506,23 +506,16 @@
                    aria-label="Open your Vibe">
 
                     {% if vibe.media %}
-                        {% if vibe.is_video %}
-                            <video muted playsinline preload="metadata">
-                                <source src="{{ vibe.media.url }}">
-                            </video>
-                            <span class="my-vibe-media-badge">▶ VIDEO</span>
-                        {% else %}
-                            <img
-                                src="{{ vibe.media.url }}"
-                                alt="Your published Vibe"
-                                loading="lazy"
-                            >
+                        <img
+                            src="{{ vibe.media.url }}"
+                            alt="Your published Vibe"
+                            loading="lazy"
+                        >
 
-                            {% if ".gif" in vibe.media.name|lower %}
-                                <span class="my-vibe-media-badge">GIF</span>
-                            {% else %}
-                                <span class="my-vibe-media-badge">IMAGE</span>
-                            {% endif %}
+                        {% if ".gif" in vibe.media.name|lower %}
+                            <span class="my-vibe-media-badge">GIF</span>
+                        {% else %}
+                            <span class="my-vibe-media-badge">IMAGE</span>
                         {% endif %}
                     {% else %}
                         <div class="my-vibe-text-content">
@@ -565,8 +558,6 @@
                         <span class="my-vibe-type">
                             {% if not vibe.media %}
                                 Text
-                            {% elif vibe.is_video %}
-                                Video
                             {% elif ".gif" in vibe.media.name|lower %}
                                 GIF
                             {% else %}

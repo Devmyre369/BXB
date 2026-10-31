@@ -8,7 +8,6 @@ from django.db import models
 
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
-VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov", ".m4v"}
 
 
 def vibe_upload_path(instance, filename):
@@ -19,22 +18,14 @@ def vibe_upload_path(instance, filename):
 def validate_vibe_media(file):
     extension = Path(file.name).suffix.lower()
 
-    if extension not in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS:
+    if extension not in IMAGE_EXTENSIONS:
         raise ValidationError(
-            "Upload an image, GIF, or supported video file."
+            "Upload an image or GIF file."
         )
 
-    is_video = extension in VIDEO_EXTENSIONS
-    max_size = (
-        200 * 1024 * 1024
-        if is_video
-        else 10 * 1024 * 1024
-    )
-
-    if file.size > max_size:
+    if file.size > 10 * 1024 * 1024:
         raise ValidationError(
-            "Images and GIFs must be at most 10 MB. "
-            "Videos must be at most 200 MB."
+            "Images and GIFs must be at most 10 MB."
         )
 
 
@@ -99,13 +90,6 @@ class Vibe(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-
-    @property
-    def is_video(self):
-        return bool(
-        self.media
-        and Path(self.media.name).suffix.lower() in VIDEO_EXTENSIONS
-    )
 
     @property
     def is_text_only(self):

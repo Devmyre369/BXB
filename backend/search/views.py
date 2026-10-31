@@ -253,7 +253,7 @@ def search_suggestions(request):
             ),
             "avatar": (
                 vibe.media.url
-                if vibe.media and not vibe.is_video else ""
+                if vibe.media else ""
             ),
         })
 

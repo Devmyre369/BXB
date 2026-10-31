@@ -503,12 +503,7 @@
         <article class="vibe-detail-card">
 
             <div class="vibe-detail-media">
-                {% if vibe.media and vibe.is_video %}
-                    <video controls playsinline preload="metadata">
-                        <source src="{{ vibe.media.url }}">
-                        Your browser does not support video playback.
-                    </video>
-                {% elif vibe.media %}
+                {% if vibe.media %}
                     <img
                         src="{{ vibe.media.url }}"
                         alt="Vibe shared by {{ vibe.author.username }}"

@@ -37,8 +37,7 @@ class VibeCreateForm(forms.ModelForm):
                 attrs={
                     "accept": (
                         "image/jpeg,image/png,image/webp,"
-                        "image/gif,video/mp4,video/webm,"
-                        "video/quicktime,video/x-m4v"
+                        "image/gif"
                     ),
                     "class": "vibe-file-input",
                 }
@@ -147,7 +146,7 @@ class VibeCreateForm(forms.ModelForm):
 
         if not has_media and not has_text:
             raise forms.ValidationError(
-                "Write something or upload an image, GIF, or video "
+                "Write something or upload an image or GIF "
                 "before publishing."
             )
 

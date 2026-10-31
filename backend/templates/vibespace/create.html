@@ -284,7 +284,7 @@
             {% if is_edit %}
                 Update your Vibe details, media, tags, or visibility.
             {% else %}
-                A thought, a meme, a photo, a video, or something worth sharing. Make it yours.
+                A thought, a meme, a photo, or something worth sharing. Make it yours.
             {% endif %}
         </p>
     </header>
@@ -294,7 +294,7 @@
             <h2>{% if is_edit %}Edit your Vibe{% else %}What would you like to share?{% endif %}</h2>
             <p class="vibe-muted">Choose a format, then create your Vibe.</p>
 
-            {% if not is_edit %}
+{% if not is_edit %}
             <div class="vibe-type-picker" role="group" aria-label="Choose Vibe type">
                 <button type="button" class="vibe-type-option" data-vibe-type="text" aria-pressed="false">
                     <span class="vibe-type-symbol" aria-hidden="true">T</span>
@@ -302,14 +302,9 @@
                     <small>Thoughts, questions, updates</small>
                 </button>
                 <button type="button" class="vibe-type-option" data-vibe-type="image" aria-pressed="false">
-                    <span class="vibe-type-symbol" aria-hidden="true">▧</span>
+                    <span class="vibe-type-symbol" aria-hidden="true">▦</span>
                     <strong>Image Vibe</strong>
                     <small>Photos, artwork, GIFs</small>
-                </button>
-                <button type="button" class="vibe-type-option" data-vibe-type="video" aria-pressed="false">
-                    <span class="vibe-type-symbol" aria-hidden="true">▶</span>
-                    <strong>Video Vibe</strong>
-                    <small>Clips and moments</small>
                 </button>
             </div>
             <p class="vibe-type-status" id="vibe-type-status" aria-live="polite">Select a Vibe type to get started.</p>
@@ -317,7 +312,7 @@
 
             <form method="post" enctype="multipart/form-data" id="vibe-create-form">
                 {% csrf_token %}
-                <input type="hidden" name="vibe_type" id="vibe-type-input" value="{% if is_edit %}{% if vibe.media and vibe.is_video %}video{% elif vibe.media %}image{% else %}text{% endif %}{% endif %}">
+                <input type="hidden" name="vibe_type" id="vibe-type-input" value="{% if is_edit %}{% if vibe.media %}image{% else %}text{% endif %}{% endif %}">
 
                 {% if form.non_field_errors %}
                     <div class="vibe-error">{{ form.non_field_errors }}</div>
@@ -344,7 +339,7 @@
                     </label>
                     {{ form.media }}
 
-                    <span class="vibe-muted">Images/GIFs up to 10 MB · Videos up to 200 MB</span>
+                    <span class="vibe-muted">Images and GIFs up to 10 MB</span>
                     <span class="vibe-file-name" id="vibe-file-name" aria-live="polite"></span>
                 </div>
 
@@ -355,19 +350,12 @@
                 {% if is_edit and vibe.media %}
                     <p class="vibe-help">Current media</p>
                     <div class="vibe-preview">
-                        {% if vibe.is_video %}
-                            <video controls playsinline preload="metadata">
-                                <source src="{{ vibe.media.url }}">
-                            </video>
-                        {% else %}
-                            <img src="{{ vibe.media.url }}" alt="Current Vibe media">
-                        {% endif %}
+                        <img src="{{ vibe.media.url }}" alt="Current Vibe media">
                     </div>
                 {% endif %}
 
                 <div class="vibe-preview" id="vibe-preview" hidden>
                     <img id="vibe-preview-image" alt="Selected Vibe preview" hidden>
-                    <video id="vibe-preview-video" controls playsinline preload="metadata" hidden></video>
                 </div>
 
                 <div class="vibe-field">
@@ -506,7 +494,6 @@
     const fileName = document.getElementById("vibe-file-name");
     const preview = document.getElementById("vibe-preview");
     const previewImage = document.getElementById("vibe-preview-image");
-    const previewVideo = document.getElementById("vibe-preview-video");
     const dropzone = document.getElementById("vibe-dropzone");
     const publishButton = document.getElementById("vibe-publish-button");
     const captionCount = document.getElementById("caption-count");
@@ -523,10 +510,7 @@
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         previewUrl = null;
         previewImage.removeAttribute("src");
-        previewVideo.removeAttribute("src");
-        previewVideo.load();
         previewImage.hidden = true;
-        previewVideo.hidden = true;
         preview.hidden = true;
     }
 
@@ -537,30 +521,17 @@
 
         const extension = file.name.split(".").pop().toLowerCase();
         const imageExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
-        const videoExtensions = ["mp4", "webm", "mov", "m4v"];
         const isImage = imageExtensions.includes(extension);
-        const isVideo = videoExtensions.includes(extension);
 
-        if ((selectedType === "image" && !isImage) ||
-            (selectedType === "video" && !isVideo) ||
-            (selectedType === "text") ||
-            (!isImage && !isVideo)) {
-            fileName.textContent = selectedType === "video"
-                ? "Choose a supported video file."
-                : selectedType === "image"
-                    ? "Choose an image or GIF file."
-                    : "This file doesn't match the selected Vibe type.";
+        if (!isImage) {
+            fileName.textContent = "Choose an image or GIF file.";
             fileInput.value = "";
             updatePublishState();
             return;
         }
 
-        const maxSize = isVideo ? 200 * 1024 * 1024 : 10 * 1024 * 1024;
-
-        if (file.size > maxSize) {
-            fileName.textContent = isVideo
-                ? "Video exceeds the 200 MB limit."
-                : "Image/GIF exceeds the 10 MB limit.";
+        if (file.size > 10 * 1024 * 1024) {
+            fileName.textContent = "Image/GIF exceeds the 10 MB limit.";
             fileInput.value = "";
             updatePublishState();
             return;
@@ -569,13 +540,8 @@
         fileName.textContent = file.name;
         previewUrl = URL.createObjectURL(file);
         preview.hidden = false;
-        if (isImage) {
-            previewImage.src = previewUrl;
-            previewImage.hidden = false;
-        } else {
-            previewVideo.src = previewUrl;
-            previewVideo.hidden = false;
-        }
+        previewImage.src = previewUrl;
+        previewImage.hidden = false;
         updatePublishState();
     }
 
@@ -600,22 +566,16 @@
         if (dropzone) dropzone.hidden = isText;
         if (textNote) textNote.hidden = !isText;
         if (fileInput) {
-            fileInput.accept = isImage
-                ? ".jpg,.jpeg,.png,.webp,.gif,image/*"
-                : type === "video"
-                    ? ".mp4,.webm,.mov,.m4v,video/*"
-                    : ".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov,.m4v";
+            fileInput.accept = ".jpg,.jpeg,.png,.webp,.gif,image/*";
         }
-        if (selectLabel) selectLabel.textContent = isImage ? "+ Choose image or GIF" : "+ Choose video";
+        if (selectLabel) selectLabel.textContent = "+ Choose image or GIF";
         if (descriptionLabel) descriptionLabel.textContent = isText
             ? "Your text Vibe *"
             : "Describe your Vibe *";
         if (typeStatus) {
             typeStatus.textContent = isText
                 ? "Text Vibe selected — write your message below."
-                : isImage
-                    ? "Image Vibe selected — upload a photo, graphic, or GIF."
-                    : "Video Vibe selected — upload a video clip.";
+                : "Image Vibe selected — upload a photo, graphic, or GIF.";
         }
         if (fileInput.files.length && type === "text") {
             fileInput.value = "";
@@ -694,7 +654,7 @@
             }
             if (!selectedType) {
                 event.preventDefault();
-                if (typeStatus) typeStatus.textContent = "Please choose Text, Image, or Video Vibe first.";
+                if (typeStatus) typeStatus.textContent = "Please choose Text or Image Vibe first.";
                 return;
             }
             if (selectedType === "text" && !(descriptionInput.value || "").trim() && !(captionInput.value || "").trim()) {
@@ -735,7 +695,6 @@
             if (dropzone) dropzone.hidden = selectedType === "text";
             if (textNote) textNote.hidden = selectedType !== "text";
             if (selectedType === "image") fileInput.accept = ".jpg,.jpeg,.png,.webp,.gif,image/*";
-            if (selectedType === "video") fileInput.accept = ".mp4,.webm,.mov,.m4v,video/*";
         }
     } else {
         dropzone.hidden = true;
