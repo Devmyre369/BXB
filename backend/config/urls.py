@@ -61,6 +61,8 @@ urlpatterns = [
     path("events/", include("events.urls")),
     path("publish/", include("publish.urls")),
     path("vibespace/", include("vibespace.urls", namespace="vibespace")),
+    path("hubs/", include("bxb_hubs.urls")),
+    
 ]
 
 if settings.DEBUG:

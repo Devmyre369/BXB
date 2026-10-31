@@ -3040,6 +3040,29 @@
 </a>
 
 
+{% if user.is_authenticated %}
+<a
+    href="{% url 'hubs:create_hub' %}"
+    class="
+        nav-item
+        {% if request.resolver_match.namespace == 'hubs' %}
+            active
+        {% endif %}
+    "
+    aria-label="BXB Hubs"
+    title="BXB Hubs"
+>
+    <span class="nav-item-icon">
+        ◎
+    </span>
+
+    <span class="nav-item-label">
+        Hubs
+    </span>
+</a>
+{% endif %}
+
+
 
                 
 <a
@@ -3622,6 +3645,17 @@
             >
                 <span>✨</span>
                 <small>AI Studio</small>
+            </a>
+
+
+            <a
+                href="{% url 'hubs:create_hub' %}"
+                class="{% if request.resolver_match.namespace == 'hubs' %}active{% endif %}"
+                aria-label="BXB Hubs"
+                title="BXB Hubs"
+            >
+                <span>◎</span>
+                <small>Hubs</small>
             </a>
 
 

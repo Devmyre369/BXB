@@ -1,0 +1,197 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ hub.name }} | BXB Hubs{% endblock %}
+
+{% block content %}
+<style>
+    .hub-detail-page {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 35px 22px 60px;
+        color: var(--text-primary);
+    }
+
+    .hub-cover {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(25px, 5vw, 48px);
+        background:
+            radial-gradient(circle at 85% 10%, rgba(59,130,246,.25), transparent 35%),
+            linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+        border: 1px solid var(--border);
+        border-radius: 20px;
+    }
+
+    .hub-detail-eyebrow {
+        color: var(--blue-light);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .hub-detail-title {
+        margin: 15px 0 10px;
+        font-size: clamp(30px, 5vw, 44px);
+        font-weight: 800;
+        letter-spacing: -1.2px;
+        overflow-wrap: anywhere;
+    }
+
+    .hub-detail-description {
+        max-width: 700px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .hub-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .hub-meta span {
+        padding: 7px 11px;
+        color: var(--text-secondary);
+        background: rgba(148,163,184,.08);
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .hub-detail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(230px, .8fr);
+        gap: 20px;
+        margin-top: 22px;
+    }
+
+    .hub-detail-card {
+        padding: 23px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+    }
+
+    .hub-detail-card h2 {
+        margin-bottom: 10px;
+        font-size: 17px;
+    }
+
+    .hub-detail-card p {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .hub-stat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+    }
+
+    .hub-stat:last-child { border-bottom: 0; }
+
+    .hub-stat span:first-child { color: var(--text-muted); }
+    .hub-stat strong { color: var(--text-primary); }
+
+    .hub-owner-note {
+        margin-top: 18px;
+        padding: 13px 15px;
+        color: var(--blue-light);
+        background: rgba(59,130,246,.08);
+        border: 1px solid rgba(59,130,246,.18);
+        border-radius: 11px;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .hub-back-link {
+        display: inline-block;
+        margin-bottom: 18px;
+        color: var(--blue-light);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 700px) {
+        .hub-detail-page { padding: 24px 14px 45px; }
+        .hub-detail-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<main class="hub-detail-page">
+    <a href="{% url 'hubs:create_hub' %}" class="hub-back-link">← Create another Hub</a>
+
+    <section class="hub-cover">
+        <span class="hub-detail-eyebrow">BXB · Hubs</span>
+
+        <h1 class="hub-detail-title">
+            {{ hub.name }}<span style="color:var(--blue-light)">.</span>
+        </h1>
+
+        <p class="hub-detail-description">
+            {% if hub.description %}
+                {{ hub.description|linebreaksbr }}
+            {% else %}
+                Welcome to this Hub. Its community starts here.
+            {% endif %}
+        </p>
+
+        <div class="hub-meta">
+            <span>{{ hub.get_category_display }}</span>
+            <span>{% if hub.is_public %}Public Hub{% else %}Private Hub{% endif %}</span>
+            {% if hub.institution %}
+                <span>{{ hub.institution }}</span>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="hub-detail-grid">
+        <section class="hub-detail-card">
+            <h2>Welcome to {{ hub.name }}</h2>
+            <p>
+                This is your Hub's home. We're building the tools that will help
+                its members connect, collaborate, and share updates.
+            </p>
+
+            {% if membership %}
+                <div class="hub-owner-note">
+                    You are a {{ membership.get_role_display }} of this Hub.
+                </div>
+            {% endif %}
+        </section>
+
+        <aside class="hub-detail-card">
+            <h2>Hub information</h2>
+
+            <div class="hub-stat">
+                <span>Members</span>
+                <strong>{{ hub.memberships.count }}</strong>
+            </div>
+
+            <div class="hub-stat">
+                <span>Category</span>
+                <strong>{{ hub.get_category_display }}</strong>
+            </div>
+
+            <div class="hub-stat">
+                <span>Created</span>
+                <strong>{{ hub.created_at|date:"d M Y" }}</strong>
+            </div>
+
+            <div class="hub-stat">
+                <span>Visibility</span>
+                <strong>{% if hub.is_public %}Public{% else %}Private{% endif %}</strong>
+            </div>
+        </aside>
+    </div>
+</main>
+{% endblock %}

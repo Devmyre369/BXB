@@ -1,0 +1,271 @@
+
+{% extends "base.html" %}
+
+{% block title %}Create a Hub | BXB{% endblock %}
+
+{% block content %}
+<style>
+    .hub-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 35px 22px 60px;
+        color: var(--text-primary);
+    }
+
+    .hub-eyebrow {
+        color: var(--blue-light);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    .hub-heading {
+        margin: 12px 0 8px;
+        font-size: clamp(28px, 4vw, 38px);
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .hub-subtitle {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.7;
+        max-width: 650px;
+    }
+
+    .hub-form-card {
+        margin-top: 28px;
+        padding: clamp(20px, 4vw, 34px);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow-card);
+    }
+
+    .hub-form-card h2 {
+        margin-bottom: 7px;
+        font-size: 19px;
+    }
+
+    .hub-form-intro {
+        margin-bottom: 25px;
+        color: var(--text-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .hub-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    .hub-field label {
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 650;
+    }
+
+    .hub-field input:not([type="checkbox"]),
+    .hub-field textarea,
+    .hub-field select {
+        width: 100%;
+        padding: 13px 14px;
+        color: var(--text-primary);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        outline: none;
+        font: inherit;
+        font-size: 14px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .hub-field input:focus,
+    .hub-field textarea:focus,
+    .hub-field select:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(59,130,246,.13);
+    }
+
+    .hub-field textarea {
+        min-height: 125px;
+        resize: vertical;
+    }
+
+    .hub-field select option {
+        color: var(--text-primary);
+        background: var(--bg-secondary);
+    }
+
+    .hub-help {
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.6;
+    }
+
+    .hub-checkbox-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 15px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+    }
+
+    .hub-checkbox-row input {
+        margin-top: 3px;
+        accent-color: var(--blue);
+    }
+
+    .hub-checkbox-row label {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .hub-checkbox-row p {
+        margin-top: 4px;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .hub-error {
+        color: #f87171;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .hub-error-summary {
+        margin-bottom: 20px;
+        padding: 13px 15px;
+        background: rgba(239,68,68,.08);
+        border: 1px solid rgba(239,68,68,.25);
+        border-radius: 10px;
+        color: #fca5a5;
+        font-size: 13px;
+    }
+
+    .hub-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 28px;
+        flex-wrap: wrap;
+    }
+
+    .hub-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 43px;
+        padding: 0 20px;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .hub-button-primary {
+        color: white;
+        background: linear-gradient(135deg, var(--blue-light), var(--blue-dark));
+    }
+
+    .hub-button-secondary {
+        color: var(--text-secondary);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+    }
+
+    @media (max-width: 600px) {
+        .hub-page { padding: 24px 14px 45px; }
+        .hub-actions { flex-direction: column-reverse; }
+        .hub-actions .hub-button { width: 100%; }
+    }
+</style>
+
+<main class="hub-page">
+    <span class="hub-eyebrow">BXB · Hubs</span>
+
+    <h1 class="hub-heading">Create your Hub<span style="color:var(--blue-light)">.</span></h1>
+
+    <p class="hub-subtitle">
+        Bring your college, club, organization, or community together.
+        Create a shared space where people can connect and collaborate.
+    </p>
+
+    <section class="hub-form-card">
+        <h2>Hub details</h2>
+        <p class="hub-form-intro">
+            Start with the basics. You can build out your Hub as your community grows.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="hub-error-summary">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="hub-field">
+                <label for="{{ form.name.id_for_label }}">Hub name *</label>
+                {{ form.name }}
+                {% for error in form.name.errors %}
+                    <span class="hub-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="hub-field">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                <span class="hub-help">Explain what your Hub is about and who should join.</span>
+                {% for error in form.description.errors %}
+                    <span class="hub-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="hub-field">
+                <label for="{{ form.category.id_for_label }}">Category *</label>
+                {{ form.category }}
+                {% for error in form.category.errors %}
+                    <span class="hub-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="hub-field">
+                <label for="{{ form.institution.id_for_label }}">Institution or organization</label>
+                {{ form.institution }}
+                <span class="hub-help">Optional. For example, your college, company, or institution.</span>
+                {% for error in form.institution.errors %}
+                    <span class="hub-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="hub-checkbox-row">
+                {{ form.is_public }}
+                <div>
+                    <label for="{{ form.is_public.id_for_label }}">Make this Hub public</label>
+                    <p>Public Hubs can be viewed by logged-in BXB users. Private Hubs are visible only to their members.</p>
+                    {% for error in form.is_public.errors %}
+                        <span class="hub-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="hub-actions">
+                <a href="/" class="hub-button hub-button-secondary">Cancel</a>
+                <button type="submit" class="hub-button hub-button-primary">
+                    Create Hub →
+                </button>
+            </div>
+        </form>
+    </section>
+</main>
+{% endblock %}

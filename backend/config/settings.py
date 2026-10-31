@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "events",
     "publish",
     "vibespace",
-    "bxb_channels.apps.ChannelsConfig",
+    "bxb_hubs.apps.BxbHubsConfig",
     "chat.apps.ChatConfig",
 
     # Cloudinary media storage
