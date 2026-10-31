@@ -21,6 +21,10 @@ class Notification(models.Model):
         REPOST = "repost", "Revibe"
         HANDSHAKE_RECEIVED = "handshake_received", "Handshake Received"
         HANDSHAKE_ACCEPTED = "handshake_accepted", "Handshake Accepted"
+        HUB_JOIN_REQUEST = "hub_join_request", "Hub Join Request"
+        HUB_JOIN_ACCEPTED = "hub_join_accepted", "Hub Join Accepted"    
+
+
 
         # New in the full notification system.
         SAVE = "save", "Save"
@@ -133,38 +137,56 @@ class Notification(models.Model):
             f"{self.notification_type}"
         )
 
-    def get_target_url(self):
-        """Best link for this notification, or '' if none applies."""
-        T = self.NotificationType
+def get_target_url(self):
+    """Best link for this notification, or '' if none applies."""
+    T = self.NotificationType
+
+    try:
         if self.notification_type == T.MESSAGE:
             if self.actor_id:
                 return reverse(
-                "chat:conversation",
+                    "chat:conversation",
+                    args=[self.actor.username],
+                )
+
+        if self.vibe_id:
+            return reverse("vibespace:detail", args=[self.vibe_id])
+
+        if self.post_id:
+            return f"{reverse('feed')}#post-{self.post_id}"
+
+        if self.event_id:
+            return reverse("events:event_detail", args=[self.event.slug])
+
+        if self.notification_type in (
+            T.FOLLOW,
+            T.HANDSHAKE_RECEIVED,
+            T.HANDSHAKE_ACCEPTED,
+        ):
+            return reverse(
+                "public_profile",
                 args=[self.actor.username],
-        )
-        try:
-            if self.vibe_id:
-                return reverse("vibespace:detail", args=[self.vibe_id])
+            )
 
-            if self.post_id:
-                return f"{reverse('feed')}#post-{self.post_id}"
+        target = self.target
 
-            if self.event_id:
-                return reverse("events:event_detail", args=[self.event.slug])
-
+        if target is not None:
             if self.notification_type in (
-                T.FOLLOW,
-                T.HANDSHAKE_RECEIVED,
-                T.HANDSHAKE_ACCEPTED,
+                T.HUB_JOIN_REQUEST,
+                T.HUB_JOIN_ACCEPTED,
             ):
-                return reverse("public_profile", args=[self.actor.username])
+                return reverse(
+                    "hubs:hub_detail",
+                    kwargs={"slug": target.slug},
+                )
 
-            target = self.target
-            if target is not None and hasattr(target, "get_absolute_url"):
+            if hasattr(target, "get_absolute_url"):
                 return target.get_absolute_url()
-        except NoReverseMatch:
-            return ""
+
+    except NoReverseMatch:
         return ""
+
+    return ""
 
 
 class NotificationPreference(models.Model):

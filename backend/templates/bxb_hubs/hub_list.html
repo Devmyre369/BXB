@@ -1,0 +1,293 @@
+
+{% extends "base.html" %}
+
+{% block title %}BXB Hubs{% endblock %}
+
+{% block content %}
+<style>
+    .hubs-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+        color: var(--text-primary);
+    }
+
+    .hubs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+
+    .hubs-header h1 {
+        font-size: 28px;
+        font-weight: 750;
+        margin: 0 0 8px;
+    }
+
+    .hubs-header p {
+        color: var(--text-secondary);
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .create-hub-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 18px;
+        border-radius: 10px;
+        background: var(--blue-light, #3984ff);
+        color: white;
+        text-decoration: none;
+        font-weight: 650;
+        font-size: 14px;
+        transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .create-hub-btn:hover {
+        opacity: .9;
+        transform: translateY(-2px);
+    }
+
+    .hubs-section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 28px 0 16px;
+    }
+
+    .hubs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .hub-card {
+        background: var(--bg-card, #171b25);
+        border: 1px solid var(--border, #303746);
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        min-height: 210px;
+        transition: border-color .2s ease, transform .2s ease;
+    }
+
+    .hub-card:hover {
+        border-color: var(--blue-light, #3984ff);
+        transform: translateY(-3px);
+    }
+
+    .hub-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .hub-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(57, 132, 255, .13);
+        color: var(--blue-light, #3984ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        font-weight: 750;
+    }
+
+    .hub-visibility {
+        font-size: 11px;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: rgba(120, 120, 120, .12);
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+
+    .hub-card h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .hub-description {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 0 0 16px;
+        flex: 1;
+    }
+
+    .hub-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin-bottom: 17px;
+    }
+
+    .hub-open-link {
+        display: block;
+        text-align: center;
+        padding: 10px;
+        border: 1px solid var(--border, #303746);
+        border-radius: 9px;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 650;
+        transition: background .2s ease;
+    }
+
+    .hub-open-link:hover {
+        background: rgba(57, 132, 255, .12);
+        border-color: var(--blue-light, #3984ff);
+    }
+
+    .hubs-empty {
+        text-align: center;
+        padding: 55px 20px;
+        border: 1px dashed var(--border, #303746);
+        border-radius: 15px;
+        background: var(--bg-card, #171b25);
+    }
+
+    .hubs-empty-icon {
+        font-size: 42px;
+        margin-bottom: 12px;
+    }
+
+    .hubs-empty h3 {
+        font-size: 19px;
+        margin: 0 0 9px;
+    }
+
+    .hubs-empty p {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin: 0 0 20px;
+    }
+
+    @media (max-width: 600px) {
+        .hubs-page {
+            padding: 20px 14px 45px;
+        }
+
+        .hubs-header h1 {
+            font-size: 24px;
+        }
+
+        .create-hub-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="hubs-page">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding:12px 15px; margin-bottom:12px; border-radius:9px; background:var(--bg-card,#171b25); border:1px solid var(--border,#303746); font-size:13px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="hubs-header">
+        <div>
+            <h1>BXB Hubs</h1>
+            <p>Discover communities, connect with people and build something together.</p>
+        </div>
+
+        <a href="{% url 'hubs:create_hub' %}" class="create-hub-btn">
+            <span>＋</span> Create a Hub
+        </a>
+    </div>
+
+    <h2 class="hubs-section-title">
+        Explore Hubs
+        <span style="color:var(--text-secondary); font-size:13px; font-weight:400;">
+            ({{ hubs|length }})
+        </span>
+    </h2>
+
+    {% if hubs %}
+        <div class="hubs-grid">
+            {% for hub in hubs %}
+                <article class="hub-card">
+
+                    <div class="hub-card-top">
+                        <div class="hub-icon">
+                            {{ hub.name|first|upper }}
+                        </div>
+
+                        <span class="hub-visibility">
+                            {% if hub.is_public %}
+                                Public
+                            {% else %}
+                                Private
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <h3>{{ hub.name }}</h3>
+
+                    <p class="hub-description">
+                        {% if hub.description %}
+                            {{ hub.description|truncatechars:115 }}
+                        {% else %}
+                            A BXB Hub for people to connect and collaborate.
+                        {% endif %}
+                    </p>
+
+                    <div class="hub-meta">
+                        <span>{{ hub.get_category_display }}</span>
+
+                        {% if hub.institution %}
+                            <span>{{ hub.institution|truncatechars:35 }}</span>
+                        {% endif %}
+
+                        <span>
+                            {{ hub.memberships.count }}
+                            {% if hub.memberships.count == 1 %}
+                                member
+                            {% else %}
+                                members
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <a
+                        href="{% url 'hubs:hub_detail' hub.slug %}"
+                        class="hub-open-link"
+                    >
+                        View Hub →
+                    </a>
+
+                </article>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="hubs-empty">
+            <div class="hubs-empty-icon">◎</div>
+            <h3>No Hubs discovered yet</h3>
+            <p>Be the first to create a Hub and bring people together.</p>
+
+            <a href="{% url 'hubs:create_hub' %}" class="create-hub-btn">
+                Create Your First Hub
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

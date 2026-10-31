@@ -3042,7 +3042,7 @@
 
 {% if user.is_authenticated %}
 <a
-    href="{% url 'hubs:create_hub' %}"
+    href="{% url 'hubs:hub_list' %}"
     class="
         nav-item
         {% if request.resolver_match.namespace == 'hubs' %}

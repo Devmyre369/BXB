@@ -121,14 +121,143 @@
         font-weight: 600;
     }
 
+    .hub-action-area {
+        margin-top: 22px;
+    }
+
+    .hub-action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 19px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .hub-primary-button {
+        color: white;
+        background: #2563eb;
+    }
+
+    .hub-primary-button:hover {
+        background: #1d4ed8;
+    }
+
+    .hub-secondary-button {
+        color: var(--text-primary);
+        background: var(--bg-secondary);
+        border-color: var(--border);
+    }
+
+    .hub-danger-button {
+        color: #f87171;
+        background: rgba(239,68,68,.08);
+        border-color: rgba(239,68,68,.2);
+    }
+
+    .hub-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 13px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 650;
+    }
+
+    .hub-status-pending {
+        color: #fbbf24;
+        background: rgba(245,158,11,.1);
+        border: 1px solid rgba(245,158,11,.2);
+    }
+
+    .hub-request-section {
+        margin-top: 22px;
+    }
+
+    .hub-request-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .hub-request-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 16px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+
+    .hub-request-user {
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .hub-request-date {
+        margin-top: 5px;
+        color: var(--text-muted);
+        font-size: 11px;
+    }
+
+    .hub-request-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .hub-empty-state {
+        padding: 20px;
+        color: var(--text-muted);
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .hub-messages {
+        margin-bottom: 18px;
+    }
+
+    .hub-message {
+        margin-bottom: 9px;
+        padding: 12px 15px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 12px;
+    }
+
     @media (max-width: 700px) {
         .hub-detail-page { padding: 24px 14px 45px; }
         .hub-detail-grid { grid-template-columns: 1fr; }
+        .hub-request-item { align-items: flex-start; }
     }
 </style>
 
 <main class="hub-detail-page">
-    <a href="{% url 'hubs:create_hub' %}" class="hub-back-link">← Create another Hub</a>
+
+    <a href="{% url 'hubs:create_hub' %}" class="hub-back-link">
+        ← Create another Hub
+    </a>
+
+    {% if messages %}
+        <div class="hub-messages">
+            {% for message in messages %}
+                <div class="hub-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <section class="hub-cover">
         <span class="hub-detail-eyebrow">BXB · Hubs</span>
@@ -148,15 +277,57 @@
         <div class="hub-meta">
             <span>{{ hub.get_category_display }}</span>
             <span>{% if hub.is_public %}Public Hub{% else %}Private Hub{% endif %}</span>
+
             {% if hub.institution %}
                 <span>{{ hub.institution }}</span>
             {% endif %}
         </div>
+
+        <div class="hub-action-area">
+
+            {% if membership %}
+
+                <div class="hub-owner-note">
+                    You are a {{ membership.get_role_display }} of this Hub.
+                </div>
+
+            {% elif join_request and join_request.status == "PENDING" %}
+
+                <div class="hub-status hub-status-pending">
+                    ⏳ Your join request is awaiting approval.
+                </div>
+
+                <form method="POST"
+                      action="{% url 'hubs:cancel_join_request' hub.slug %}"
+                      style="margin-top:12px;">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="hub-action-button hub-secondary-button">
+                        Cancel Request
+                    </button>
+                </form>
+
+            {% else %}
+
+                <form method="POST"
+                      action="{% url 'hubs:request_to_join' hub.slug %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="hub-action-button hub-primary-button">
+                        Request to Join Hub →
+                    </button>
+                </form>
+
+            {% endif %}
+
+        </div>
     </section>
 
     <div class="hub-detail-grid">
+
         <section class="hub-detail-card">
             <h2>Welcome to {{ hub.name }}</h2>
+
             <p>
                 This is your Hub's home. We're building the tools that will help
                 its members connect, collaborate, and share updates.
@@ -189,9 +360,76 @@
 
             <div class="hub-stat">
                 <span>Visibility</span>
-                <strong>{% if hub.is_public %}Public{% else %}Private{% endif %}</strong>
+                <strong>
+                    {% if hub.is_public %}Public{% else %}Private{% endif %}
+                </strong>
             </div>
         </aside>
+
     </div>
+
+    {% if is_owner %}
+        <section class="hub-detail-card hub-request-section">
+
+            <h2>Membership Requests</h2>
+
+            <p>
+                Review people who want to become members of your Hub.
+                You control who gets accepted.
+            </p>
+
+            <div class="hub-request-list">
+
+                {% for join_request in pending_join_requests %}
+
+                    <div class="hub-request-item">
+
+                        <div>
+                            <div class="hub-request-user">
+                                {{ join_request.user.username }}
+                            </div>
+
+                            <div class="hub-request-date">
+                                Requested {{ join_request.requested_at|date:"d M Y, H:i" }}
+                            </div>
+                        </div>
+
+                        <div class="hub-request-actions">
+
+                            <form method="POST"
+                                  action="{% url 'hubs:accept_join_request' join_request.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="hub-action-button hub-primary-button">
+                                    Accept
+                                </button>
+                            </form>
+
+                            <form method="POST"
+                                  action="{% url 'hubs:reject_join_request' join_request.id %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="hub-action-button hub-danger-button">
+                                    Reject
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="hub-empty-state">
+                        No pending membership requests right now.
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+    {% endif %}
+
 </main>
 {% endblock %}
