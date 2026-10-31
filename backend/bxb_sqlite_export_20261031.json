@@ -1,0 +1,1201 @@
+[
+{
+  "model": "users.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$4SsN0gyMi5eLNZ2DblSMT2$4xDNw7Obwd3niHjBIhEWmScTsnfoqKjajb5pdTo0B2g=",
+    "last_login": "2026-10-29T06:57:07.715Z",
+    "is_superuser": true,
+    "username": "bxb",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-07T13:47:55.027Z",
+    "email": "bitsxbytesbxb@gmail.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$Hzijnv6ES97BwQN5mD128t$nRYdJoC3O9cNWw5wvvOfzyivrVf5XmN6JP5MlJ2QMJA=",
+    "last_login": "2026-10-31T07:50:26.223Z",
+    "is_superuser": false,
+    "username": "Devkumar99",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-07T13:54:36.915Z",
+    "email": "devanshshukla957@gmail.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$UGaS5QpQRR3xOgNfOxWga7$aOelRuItELPa19DLhyQrnC5a41hl0Pe1/huA+KC7t7Y=",
+    "last_login": "2026-10-29T07:20:14.190Z",
+    "is_superuser": false,
+    "username": "DevanshKumar",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-07T16:28:04.950Z",
+    "email": "devvkumar999@gmail.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 8,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$LqEA9VXBgECJuqznsYpowc$Huz6BnltzDupzYX1dOqJ+H6oG7Mmho9HhriUlhRgTrc=",
+    "last_login": "2026-10-29T09:53:21.233Z",
+    "is_superuser": false,
+    "username": "chikidev",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-08T09:29:41.682Z",
+    "email": "devkumarrk009@gmail.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 9,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$UDbCvtHbkdkyh1pa9hY3Iu$jKM4p1jGb7GQL5rt+p72WnAO3e7N6Y5/MTetm/KrAvw=",
+    "last_login": "2026-10-29T18:16:25.954Z",
+    "is_superuser": false,
+    "username": "Frinciplex",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-14T10:21:43.724Z",
+    "email": "frinciplex@gmail.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.emailotp",
+  "pk": 1,
+  "fields": {
+    "email": "devkumarrk009@gmail.com",
+    "otp": "461257",
+    "created_at": "2026-10-07T09:06:36.565Z",
+    "expires_at": "2026-10-07T09:11:36.563Z",
+    "verified": true,
+    "attempts": 0
+  }
+},
+{
+  "model": "users.emailotp",
+  "pk": 2,
+  "fields": {
+    "email": "devanshshukla957@gmail.com",
+    "otp": "466156",
+    "created_at": "2026-10-07T13:53:41.371Z",
+    "expires_at": "2026-10-07T13:58:41.369Z",
+    "verified": true,
+    "attempts": 0
+  }
+},
+{
+  "model": "users.emailotp",
+  "pk": 3,
+  "fields": {
+    "email": "devvkumar999@gmail.com",
+    "otp": "401068",
+    "created_at": "2026-10-07T16:23:34.676Z",
+    "expires_at": "2026-10-07T16:28:34.674Z",
+    "verified": true,
+    "attempts": 0
+  }
+},
+{
+  "model": "users.emailotp",
+  "pk": 7,
+  "fields": {
+    "email": "devkumarrk009@gmail.com",
+    "otp": "162684",
+    "created_at": "2026-10-08T09:28:26.712Z",
+    "expires_at": "2026-10-08T09:33:26.701Z",
+    "verified": true,
+    "attempts": 1
+  }
+},
+{
+  "model": "users.emailotp",
+  "pk": 8,
+  "fields": {
+    "email": "frinciplex009@gmail.com",
+    "otp": "667095",
+    "created_at": "2026-10-14T10:16:30.226Z",
+    "expires_at": "2026-10-14T10:21:30.224Z",
+    "verified": false,
+    "attempts": 0
+  }
+},
+{
+  "model": "users.emailotp",
+  "pk": 10,
+  "fields": {
+    "email": "frinciplex@gmail.com",
+    "otp": "765020",
+    "created_at": "2026-10-14T10:21:02.974Z",
+    "expires_at": "2026-10-14T10:26:02.963Z",
+    "verified": true,
+    "attempts": 0
+  }
+},
+{
+  "model": "profiles.profile",
+  "pk": 4,
+  "fields": {
+    "user": 5,
+    "avatar": "",
+    "bio": "",
+    "college": "",
+    "course": "",
+    "year": null,
+    "skills": "",
+    "interests": "",
+    "github": "",
+    "linkedin": "",
+    "created_at": "2026-10-07T13:47:55.612Z",
+    "updated_at": "2026-10-07T13:47:55.612Z"
+  }
+},
+{
+  "model": "profiles.profile",
+  "pk": 5,
+  "fields": {
+    "user": 6,
+    "avatar": "avatars/Screenshot_2026-10-10_183733.png",
+    "bio": "Passionate Computer Programmer",
+    "college": "Goel Institute of Technology and Management",
+    "course": "B.Tech",
+    "year": 2,
+    "skills": "Python, AI Developer",
+    "interests": "AI , Cybersecurity, Web3",
+    "github": "https://github.com/DevKumar57-67",
+    "linkedin": "https://www.linkedin.com/in/dev-kumar369/?isSelfProfile=true",
+    "created_at": "2026-10-07T13:54:37.615Z",
+    "updated_at": "2026-10-31T09:35:51.490Z"
+  }
+},
+{
+  "model": "profiles.profile",
+  "pk": 6,
+  "fields": {
+    "user": 7,
+    "avatar": "",
+    "bio": "",
+    "college": "",
+    "course": "",
+    "year": null,
+    "skills": "",
+    "interests": "",
+    "github": "",
+    "linkedin": "",
+    "created_at": "2026-10-07T16:28:05.753Z",
+    "updated_at": "2026-10-07T16:28:05.753Z"
+  }
+},
+{
+  "model": "profiles.profile",
+  "pk": 7,
+  "fields": {
+    "user": 8,
+    "avatar": "",
+    "bio": "",
+    "college": "",
+    "course": "",
+    "year": null,
+    "skills": "",
+    "interests": "",
+    "github": "",
+    "linkedin": "",
+    "created_at": "2026-10-08T09:29:42.485Z",
+    "updated_at": "2026-10-08T09:29:42.485Z"
+  }
+},
+{
+  "model": "profiles.profile",
+  "pk": 8,
+  "fields": {
+    "user": 9,
+    "avatar": "",
+    "bio": "",
+    "college": "",
+    "course": "",
+    "year": null,
+    "skills": "",
+    "interests": "",
+    "github": "",
+    "linkedin": "",
+    "created_at": "2026-10-14T10:21:44.284Z",
+    "updated_at": "2026-10-14T10:21:44.284Z"
+  }
+},
+{
+  "model": "profiles.follow",
+  "pk": 1,
+  "fields": {
+    "follower": 8,
+    "following": 6,
+    "created_at": "2026-10-12T09:16:07.664Z"
+  }
+},
+{
+  "model": "profiles.follow",
+  "pk": 2,
+  "fields": {
+    "follower": 6,
+    "following": 7,
+    "created_at": "2026-10-14T06:46:14.304Z"
+  }
+},
+{
+  "model": "profiles.follow",
+  "pk": 3,
+  "fields": {
+    "follower": 7,
+    "following": 6,
+    "created_at": "2026-10-19T18:17:57.705Z"
+  }
+},
+{
+  "model": "profiles.follow",
+  "pk": 4,
+  "fields": {
+    "follower": 9,
+    "following": 6,
+    "created_at": "2026-10-29T18:56:02.516Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 3,
+  "fields": {
+    "author": 6,
+    "content": "hi,this is dev",
+    "image": "",
+    "created_at": "2026-10-07T13:55:16.729Z",
+    "updated_at": "2026-10-07T13:55:16.729Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 4,
+  "fields": {
+    "author": 6,
+    "content": "i am on bxb",
+    "image": "posts/WhatsApp_Image_2026-08-28_at_1_A6mrj5p.50.47_AM.jpeg",
+    "created_at": "2026-10-07T15:09:23.282Z",
+    "updated_at": "2026-10-07T15:09:23.282Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 5,
+  "fields": {
+    "author": 6,
+    "content": "this is the best version of the ui",
+    "image": "",
+    "created_at": "2026-10-07T16:15:49.668Z",
+    "updated_at": "2026-10-07T16:15:49.668Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 6,
+  "fields": {
+    "author": 7,
+    "content": "onboarded on bxb",
+    "image": "",
+    "created_at": "2026-10-07T16:28:27.000Z",
+    "updated_at": "2026-10-07T16:28:27.000Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 7,
+  "fields": {
+    "author": 6,
+    "content": "python is the most versatile programming language",
+    "image": "",
+    "created_at": "2026-10-08T07:30:04.190Z",
+    "updated_at": "2026-10-08T07:30:04.190Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 8,
+  "fields": {
+    "author": 6,
+    "content": "its a classic day on bxb",
+    "image": "",
+    "created_at": "2026-10-19T08:08:30.175Z",
+    "updated_at": "2026-10-19T08:08:30.175Z"
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 9,
+  "fields": {
+    "author": 6,
+    "content": "The Bxb Logo Updated",
+    "image": "posts/Untitled_Design.png",
+    "created_at": "2026-10-24T08:14:05.803Z",
+    "updated_at": "2026-10-24T08:14:05.803Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 1,
+  "fields": {
+    "user": 6,
+    "post": 7,
+    "created_at": "2026-10-08T08:19:20.947Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 2,
+  "fields": {
+    "user": 7,
+    "post": 3,
+    "created_at": "2026-10-08T08:44:36.903Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 3,
+  "fields": {
+    "user": 7,
+    "post": 7,
+    "created_at": "2026-10-08T09:01:12.495Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 4,
+  "fields": {
+    "user": 8,
+    "post": 7,
+    "created_at": "2026-10-08T09:29:50.173Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 5,
+  "fields": {
+    "user": 7,
+    "post": 6,
+    "created_at": "2026-10-12T12:09:28.433Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 6,
+  "fields": {
+    "user": 6,
+    "post": 6,
+    "created_at": "2026-10-14T05:40:11.984Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 7,
+  "fields": {
+    "user": 9,
+    "post": 7,
+    "created_at": "2026-10-14T10:43:27.313Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 8,
+  "fields": {
+    "user": 6,
+    "post": 4,
+    "created_at": "2026-10-16T17:25:25.348Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 9,
+  "fields": {
+    "user": 6,
+    "post": 5,
+    "created_at": "2026-10-19T08:02:59.974Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 10,
+  "fields": {
+    "user": 6,
+    "post": 8,
+    "created_at": "2026-10-19T08:08:35.769Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 11,
+  "fields": {
+    "user": 6,
+    "post": 9,
+    "created_at": "2026-10-24T08:14:10.522Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 12,
+  "fields": {
+    "user": 7,
+    "post": 9,
+    "created_at": "2026-10-24T20:48:22.808Z"
+  }
+},
+{
+  "model": "posts.postlike",
+  "pk": 13,
+  "fields": {
+    "user": 7,
+    "post": 8,
+    "created_at": "2026-10-24T20:48:29.205Z"
+  }
+},
+{
+  "model": "posts.postsave",
+  "pk": 1,
+  "fields": {
+    "user": 6,
+    "post": 7,
+    "created_at": "2026-10-11T18:28:25.441Z"
+  }
+},
+{
+  "model": "posts.postsave",
+  "pk": 2,
+  "fields": {
+    "user": 6,
+    "post": 6,
+    "created_at": "2026-10-11T18:28:33.708Z"
+  }
+},
+{
+  "model": "posts.comment",
+  "pk": 1,
+  "fields": {
+    "post": 7,
+    "user": 6,
+    "content": "abe ye to mai hi hoon",
+    "created_at": "2026-10-08T08:19:37.361Z",
+    "updated_at": "2026-10-08T08:19:37.361Z"
+  }
+},
+{
+  "model": "posts.comment",
+  "pk": 2,
+  "fields": {
+    "post": 7,
+    "user": 9,
+    "content": "sahi hai bro",
+    "created_at": "2026-10-14T10:43:38.728Z",
+    "updated_at": "2026-10-14T10:43:38.728Z"
+  }
+},
+{
+  "model": "posts.repost",
+  "pk": 1,
+  "fields": {
+    "user": 6,
+    "original_post": 4,
+    "created_at": "2026-10-14T05:59:51.037Z"
+  }
+},
+{
+  "model": "posts.repost",
+  "pk": 2,
+  "fields": {
+    "user": 6,
+    "original_post": 8,
+    "created_at": "2026-10-24T15:05:34.398Z"
+  }
+},
+{
+  "model": "search.searchhistory",
+  "pk": 12,
+  "fields": {
+    "user": 6,
+    "query": "codespri",
+    "created_at": "2026-10-19T08:19:34.146Z"
+  }
+},
+{
+  "model": "handshake.handshake",
+  "pk": 1,
+  "fields": {
+    "sender": 6,
+    "receiver": 7,
+    "status": "accepted",
+    "created_at": "2026-10-08T08:42:06.281Z",
+    "updated_at": "2026-10-08T08:43:29.228Z"
+  }
+},
+{
+  "model": "handshake.handshake",
+  "pk": 3,
+  "fields": {
+    "sender": 6,
+    "receiver": 8,
+    "status": "accepted",
+    "created_at": "2026-10-12T09:18:12.690Z",
+    "updated_at": "2026-10-12T09:18:48.955Z"
+  }
+},
+{
+  "model": "handshake.handshake",
+  "pk": 4,
+  "fields": {
+    "sender": 9,
+    "receiver": 6,
+    "status": "accepted",
+    "created_at": "2026-10-29T07:50:17.886Z",
+    "updated_at": "2026-10-29T08:16:05.759Z"
+  }
+},
+{
+  "model": "handshake.handshake",
+  "pk": 5,
+  "fields": {
+    "sender": 9,
+    "receiver": 8,
+    "status": "accepted",
+    "created_at": "2026-10-29T09:33:31.163Z",
+    "updated_at": "2026-10-29T09:34:27.991Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 1,
+  "fields": {
+    "recipient": 6,
+    "actor": 7,
+    "notification_type": "like",
+    "post": 7,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "liked your post.",
+    "is_read": true,
+    "created_at": "2026-10-08T09:01:12.516Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 2,
+  "fields": {
+    "recipient": 6,
+    "actor": 8,
+    "notification_type": "like",
+    "post": 7,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "liked your post.",
+    "is_read": true,
+    "created_at": "2026-10-08T09:29:50.191Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 3,
+  "fields": {
+    "recipient": 8,
+    "actor": 6,
+    "notification_type": "handshake_received",
+    "post": null,
+    "handshake": 3,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "Devkumar99 sent you a collaboration request.",
+    "is_read": true,
+    "created_at": "2026-10-12T09:18:12.700Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 4,
+  "fields": {
+    "recipient": 6,
+    "actor": 8,
+    "notification_type": "handshake_accepted",
+    "post": null,
+    "handshake": 3,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "chikidev accepted your collaboration request.",
+    "is_read": true,
+    "created_at": "2026-10-12T09:18:48.965Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 5,
+  "fields": {
+    "recipient": 7,
+    "actor": 6,
+    "notification_type": "like",
+    "post": 6,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "liked your post.",
+    "is_read": true,
+    "created_at": "2026-10-14T05:40:12.008Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 6,
+  "fields": {
+    "recipient": 6,
+    "actor": 9,
+    "notification_type": "like",
+    "post": 7,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "liked your post.",
+    "is_read": true,
+    "created_at": "2026-10-14T10:43:27.325Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 7,
+  "fields": {
+    "recipient": 6,
+    "actor": 9,
+    "notification_type": "comment",
+    "post": 7,
+    "handshake": null,
+    "comment": 2,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "commented on your post.",
+    "is_read": true,
+    "created_at": "2026-10-14T10:43:38.740Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 8,
+  "fields": {
+    "recipient": 6,
+    "actor": 7,
+    "notification_type": "like",
+    "post": 9,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "liked your post.",
+    "is_read": true,
+    "created_at": "2026-10-24T20:48:22.819Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 9,
+  "fields": {
+    "recipient": 6,
+    "actor": 7,
+    "notification_type": "like",
+    "post": 8,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "liked your post.",
+    "is_read": true,
+    "created_at": "2026-10-24T20:48:29.213Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 11,
+  "fields": {
+    "recipient": 7,
+    "actor": 6,
+    "notification_type": "message",
+    "post": null,
+    "handshake": 1,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "Devkumar99 sent you a message.",
+    "is_read": true,
+    "created_at": "2026-10-29T07:19:54.054Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 12,
+  "fields": {
+    "recipient": 6,
+    "actor": 9,
+    "notification_type": "handshake_received",
+    "post": null,
+    "handshake": 4,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "Frinciplex sent you a handshake.",
+    "is_read": true,
+    "created_at": "2026-10-29T07:50:17.901Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 13,
+  "fields": {
+    "recipient": 9,
+    "actor": 6,
+    "notification_type": "handshake_accepted",
+    "post": null,
+    "handshake": 4,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "Devkumar99 accepted your handshake.",
+    "is_read": true,
+    "created_at": "2026-10-29T08:16:05.765Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 14,
+  "fields": {
+    "recipient": 9,
+    "actor": 6,
+    "notification_type": "message",
+    "post": null,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": 38,
+    "object_id": 3,
+    "message": "sent you a message: how is life going",
+    "is_read": true,
+    "created_at": "2026-10-29T09:32:33.977Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 15,
+  "fields": {
+    "recipient": 8,
+    "actor": 9,
+    "notification_type": "handshake_received",
+    "post": null,
+    "handshake": 5,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "Frinciplex sent you a handshake.",
+    "is_read": true,
+    "created_at": "2026-10-29T09:33:31.177Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 16,
+  "fields": {
+    "recipient": 9,
+    "actor": 8,
+    "notification_type": "handshake_accepted",
+    "post": null,
+    "handshake": 5,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "chikidev accepted your handshake.",
+    "is_read": false,
+    "created_at": "2026-10-29T09:34:28.002Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 17,
+  "fields": {
+    "recipient": 9,
+    "actor": 8,
+    "notification_type": "message",
+    "post": null,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": 38,
+    "object_id": 4,
+    "message": "sent you a message: hi how are you",
+    "is_read": false,
+    "created_at": "2026-10-29T18:16:14.706Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 18,
+  "fields": {
+    "recipient": 6,
+    "actor": 9,
+    "notification_type": "follow",
+    "post": null,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": null,
+    "content_type": null,
+    "object_id": null,
+    "message": "started following you.",
+    "is_read": true,
+    "created_at": "2026-10-29T18:56:02.524Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 19,
+  "fields": {
+    "recipient": 9,
+    "actor": 6,
+    "notification_type": "event_new",
+    "post": null,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": 2,
+    "content_type": null,
+    "object_id": null,
+    "message": "published a new event: Lights of Chamnpions",
+    "is_read": false,
+    "created_at": "2026-10-31T09:08:56.207Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 20,
+  "fields": {
+    "recipient": 7,
+    "actor": 6,
+    "notification_type": "event_new",
+    "post": null,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": 2,
+    "content_type": null,
+    "object_id": null,
+    "message": "published a new event: Lights of Chamnpions",
+    "is_read": false,
+    "created_at": "2026-10-31T09:08:56.216Z"
+  }
+},
+{
+  "model": "notifications.notification",
+  "pk": 21,
+  "fields": {
+    "recipient": 8,
+    "actor": 6,
+    "notification_type": "event_new",
+    "post": null,
+    "handshake": null,
+    "comment": null,
+    "vibe": null,
+    "vibe_comment": null,
+    "event": 2,
+    "content_type": null,
+    "object_id": null,
+    "message": "published a new event: Lights of Chamnpions",
+    "is_read": false,
+    "created_at": "2026-10-31T09:08:56.226Z"
+  }
+},
+{
+  "model": "events.event",
+  "pk": 1,
+  "fields": {
+    "title": "BXB Codesprint 2026",
+    "slug": "bxb-codesprint-2026",
+    "description": "A mock coding challenge hosted by BitsXBytes. Participants solve programming problems, explore algorithmic thinking, and compete with fellow students. This is a test event created to verify the BxB Events feature.",
+    "organizer": "BitsXBytes Community",
+    "venue": "GoelPlex",
+    "start_date": "2026-10-14T12:30:00Z",
+    "end_date": "2026-10-15T12:30:00Z",
+    "registration_deadline": "2026-10-13T12:31:00Z",
+    "participation_type": "both",
+    "max_participants": null,
+    "min_team_size": 2,
+    "max_team_size": 4,
+    "image": "",
+    "banner": "",
+    "poster": "",
+    "registration_link": "",
+    "status": "published",
+    "created_by": 6,
+    "created_at": "2026-10-12T07:03:25.038Z",
+    "updated_at": "2026-10-12T07:03:25.038Z"
+  }
+},
+{
+  "model": "events.event",
+  "pk": 2,
+  "fields": {
+    "title": "Lights of Chamnpions",
+    "slug": "lights-of-chamnpions",
+    "description": "🔥 **Light of Champions – Squad Tournament (Diwali Edition)** 🏆\r\n\r\nCelebrate Diwali with an exciting Free Fire squad tournament organized by the **AIML and IT Department**, in collaboration with **Techz Xenon, Community India, and eSports.vd**.\r\n\r\nGet your squad together, showcase your gaming skills, compete against other teams, and fight your way to the championship!\r\n\r\n🎮 **Event Highlights:**\r\n- **Game:** Free Fire\r\n- **Format:** Squad Tournament\r\n- **Mode:** LAN (all stages, including the starting stage and grand final)\r\n- **Limited Slots:** Only 24 squads\r\n- **Event Date:** 3 November\r\n\r\n🏆 **Top 3 Combined Rewards:**\r\n- 10,000 Diamonds\r\n- ₹1,000 Cash Prize\r\n- Championship Trophy\r\n- Certificates\r\n- Exclusive Merchandise\r\n\r\n🔥 Whether you're playing for glory, rewards, or the thrill of competition, this is your chance to prove your squad's dominance!\r\n\r\n📞 **Registration:** DM 8400146507 or scan the QR code on the event poster.\r\n\r\n🪔 **Play. Compete. Celebrate. Let your squad shine this Diwali!**",
+    "organizer": "Career Catalyst",
+    "venue": "GoelPlex",
+    "start_date": "2026-11-03T09:00:00Z",
+    "end_date": "2026-11-03T17:00:00Z",
+    "registration_deadline": "2026-11-01T14:37:00Z",
+    "participation_type": "both",
+    "max_participants": 0,
+    "min_team_size": 1,
+    "max_team_size": 4,
+    "image": "",
+    "banner": "",
+    "poster": "",
+    "registration_link": "",
+    "status": "published",
+    "created_by": 6,
+    "created_at": "2026-10-31T09:08:56.190Z",
+    "updated_at": "2026-10-31T09:08:56.190Z"
+  }
+},
+{
+  "model": "events.eventregistration",
+  "pk": 1,
+  "fields": {
+    "event": 1,
+    "user": 6,
+    "registration_type": "team",
+    "status": "cancelled",
+    "registered_at": "2026-10-12T07:04:06.964Z"
+  }
+},
+{
+  "model": "events.eventregistration",
+  "pk": 2,
+  "fields": {
+    "event": 1,
+    "user": 8,
+    "registration_type": "team",
+    "status": "cancelled",
+    "registered_at": "2026-10-12T07:40:21.667Z"
+  }
+},
+{
+  "model": "vibespace.vibe",
+  "pk": 7,
+  "fields": {
+    "author": 6,
+    "media": "vibes/2300cc156363470c839a1c1b16af2b1e.jpeg",
+    "caption": "Light of champions",
+    "description": "🔥 **Light of Champions – Squad Tournament (Diwali Edition)** 🏆\r\n\r\nCelebrate Diwali with an exciting Free Fire squad tournament organized by the **AIML and IT Department**, in collaboration with **Techz Xenon, Community India, and eSports.vd**.\r\n\r\nGet your squad together, showcase your gaming skills, compete against other teams, and fight your way to the championship!\r\n\r\n🎮 **Event Highlights:**\r\n- **Game:** Free Fire\r\n- **Format:** Squad Tournament\r\n- **Mode:** LAN (all stages, including the starting stage and grand final)\r\n- **Limited Slots:** Only 24 squads\r\n- **Event Date:** 3 November\r\n\r\n🏆 **Top 3 Combined Rewards:**\r\n- 10,000 Diamonds\r\n- ₹1,000 Cash Prize\r\n- Championship Trophy\r\n- Certificates\r\n- Exclusive Merchandise\r\n\r\n🔥 Whether you're playing for glory, rewards, or the thrill of competition, this is your chance to prove your squad's dominance!\r\n\r\n📞 **Registration:** DM 8400146507 or scan the QR code on the event poster.\r\n\r\n🪔 **Play. Compete. Celebrate. Let your squad shine this Diwali!**",
+    "is_campus_event": true,
+    "campus_event_name": "Free Fire Gaming Event",
+    "target_audience": "everyone",
+    "created_at": "2026-10-31T09:06:14.630Z",
+    "is_public": true,
+    "tags": [
+      7,
+      8,
+      6
+    ]
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 1,
+  "fields": {
+    "name": "coding",
+    "slug": "coding"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 2,
+  "fields": {
+    "name": "codolio",
+    "slug": "codolio"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 3,
+  "fields": {
+    "name": "statistics",
+    "slug": "statistics"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 4,
+  "fields": {
+    "name": "bxblogo",
+    "slug": "bxblogo"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 5,
+  "fields": {
+    "name": "community",
+    "slug": "community"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 6,
+  "fields": {
+    "name": "lights of champions",
+    "slug": "lights-of-champions"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 7,
+  "fields": {
+    "name": "free fire",
+    "slug": "free-fire"
+  }
+},
+{
+  "model": "vibespace.vibetag",
+  "pk": 8,
+  "fields": {
+    "name": "gaming event",
+    "slug": "gaming-event"
+  }
+},
+{
+  "model": "chat.message",
+  "pk": 1,
+  "fields": {
+    "handshake": 1,
+    "sender": 7,
+    "recipient": 6,
+    "body": "hi dev how you are doing?",
+    "created_at": "2026-10-29T06:48:06.260Z",
+    "is_read": true
+  }
+},
+{
+  "model": "chat.message",
+  "pk": 2,
+  "fields": {
+    "handshake": 1,
+    "sender": 6,
+    "recipient": 7,
+    "body": "i am great devansh",
+    "created_at": "2026-10-29T07:19:54.043Z",
+    "is_read": true
+  }
+},
+{
+  "model": "chat.message",
+  "pk": 3,
+  "fields": {
+    "handshake": 4,
+    "sender": 6,
+    "recipient": 9,
+    "body": "how is life going",
+    "created_at": "2026-10-29T09:32:33.953Z",
+    "is_read": true
+  }
+},
+{
+  "model": "chat.message",
+  "pk": 4,
+  "fields": {
+    "handshake": 5,
+    "sender": 8,
+    "recipient": 9,
+    "body": "hi how are you",
+    "created_at": "2026-10-29T18:16:14.689Z",
+    "is_read": true
+  }
+}
+]

@@ -1,3 +1,4 @@
+
 """
 Django settings for config project.
 
@@ -10,20 +11,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
+import dj_database_url
+from dotenv import load_dotenv
 from pathlib import Path
 
 
 LOGIN_URL = "/auth/login/"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = "django-insecure-@xav+zkzxe8v93fjrp^fkg5a+c(!o1@l^s(7=^=#m-t9%^c*sb"
+
+# SECURITY
+# IMPORTANT: Move SECRET_KEY to .env and rotate the previously exposed key.
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "replace-this-with-a-secure-secret-key")
+
 DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "::1", "testserver"]
 
 
+# APPLICATIONS
 INSTALLED_APPS = [
-    
     "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -32,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "channels",  # Third-party Django Channels library
+    "channels",
 
     "core",
     "users",
@@ -45,13 +54,16 @@ INSTALLED_APPS = [
     "events",
     "publish",
     "vibespace",
-    "bxb_channels.apps.ChannelsConfig",  # Your BXB Communities app
+    "bxb_channels.apps.ChannelsConfig",
     "chat.apps.ChatConfig",
+
+    # Cloudinary media storage
+    "cloudinary_storage",
+    "cloudinary",
 ]
 
 
-
-
+# MIDDLEWARE
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -62,8 +74,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 ROOT_URLCONF = "config.urls"
 
+
+# TEMPLATES
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -79,15 +94,31 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = "config.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 
+# DATABASE CONFIGURATION
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+
+# PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -103,31 +134,55 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+# INTERNATIONALIZATION
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+
+# STATIC FILES
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+
+# MEDIA FILES
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+
+# STORAGE CONFIGURATION
+# Uploaded media files -> Cloudinary
+# Static files -> Django local static-file storage
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+
+# EMAIL
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+# AUTHENTICATION
 AUTH_USER_MODEL = "users.User"
+
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 # ----------------------------------------------------------------------
 # NOTIFICATIONS
 # ----------------------------------------------------------------------
-# In-app notifications are always stored in the database. Set this to True
-# to also email users who have email turned on for a notification type.
+
 NOTIFICATIONS_EMAIL_ENABLED = False
 
-# Used to build links inside notification emails.
 SITE_URL = "http://localhost:8000"
-
 
 
 # ----------------------------------------------------------------------
