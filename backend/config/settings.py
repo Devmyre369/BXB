@@ -73,7 +73,7 @@ INSTALLED_APPS = [
 
     # BXB applications
     "core",
-    "users",
+    "users.apps.UsersConfig",
     "profiles",
     "posts",
     "search",
