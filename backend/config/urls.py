@@ -26,6 +26,7 @@ urlpatterns = [
     path("auth/verify-otp/", verify_otp, name="verify_otp"),
     path("auth/logout/", logout_view, name="logout"),
     path("auth/", include("users.urls", namespace="users")),
+    path("auth/", include("allauth.urls")),
     path("profile/", my_profile, name="my_profile"),
     path("profile/edit/", edit_profile, name="edit_profile"),
     path("profile/u/<str:username>/", public_profile, name="public_profile"),

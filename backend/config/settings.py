@@ -11,38 +11,67 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+
 import os
 import dj_database_url
 from dotenv import load_dotenv
 from pathlib import Path
 
 
-LOGIN_URL = "/auth/login/"
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
+# ----------------------------------------------------------------------
 # SECURITY
-# IMPORTANT: Move SECRET_KEY to .env and rotate the previously exposed key.
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "replace-this-with-a-secure-secret-key")
+# ----------------------------------------------------------------------
+
+LOGIN_URL = "/auth/login/"
+
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY",
+    "replace-this-with-a-secure-secret-key",
+)
 
 DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "::1", "testserver"]
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "::1",
+    "testserver",
+]
 
 
+# ----------------------------------------------------------------------
 # APPLICATIONS
+# ----------------------------------------------------------------------
+
 INSTALLED_APPS = [
     "daphne",
+
+    # Django built-in applications
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
 
+    # Django Allauth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+
+    # OAuth providers
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
+
+    # Django Channels
     "channels",
 
+    # BXB applications
     "core",
     "users",
     "profiles",
@@ -63,22 +92,39 @@ INSTALLED_APPS = [
 ]
 
 
+# ----------------------------------------------------------------------
 # MIDDLEWARE
+# ----------------------------------------------------------------------
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+
+    # Django Allauth middleware
+    "allauth.account.middleware.AccountMiddleware",
+
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
+# ----------------------------------------------------------------------
+# URL CONFIGURATION
+# ----------------------------------------------------------------------
+
 ROOT_URLCONF = "config.urls"
 
+LOGIN_REDIRECT_URL = "/feed/"
+LOGOUT_REDIRECT_URL = "/"
 
+
+# ----------------------------------------------------------------------
 # TEMPLATES
+# ----------------------------------------------------------------------
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -98,7 +144,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
+# ----------------------------------------------------------------------
 # DATABASE CONFIGURATION
+# ----------------------------------------------------------------------
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
@@ -118,7 +167,10 @@ else:
     }
 
 
+# ----------------------------------------------------------------------
 # PASSWORD VALIDATION
+# ----------------------------------------------------------------------
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -135,26 +187,36 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# ----------------------------------------------------------------------
 # INTERNATIONALIZATION
+# ----------------------------------------------------------------------
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
 
+# ----------------------------------------------------------------------
 # STATIC FILES
+# ----------------------------------------------------------------------
+
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 
+# ----------------------------------------------------------------------
 # MEDIA FILES
+# ----------------------------------------------------------------------
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
+# ----------------------------------------------------------------------
 # STORAGE CONFIGURATION
-# Uploaded media files -> Cloudinary
-# Static files -> Django local static-file storage
+# ----------------------------------------------------------------------
+
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -165,15 +227,87 @@ STORAGES = {
 }
 
 
+# ----------------------------------------------------------------------
 # EMAIL
+# ----------------------------------------------------------------------
+
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
+# ----------------------------------------------------------------------
 # AUTHENTICATION
+# ----------------------------------------------------------------------
+
 AUTH_USER_MODEL = "users.User"
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ----------------------------------------------------------------------
+# DJANGO SITES
+# ----------------------------------------------------------------------
+
+SITE_ID = 1
+
+
+# ----------------------------------------------------------------------
+# DJANGO ALLAUTH CONFIGURATION
+# ----------------------------------------------------------------------
+
+# Use email as the primary login identifier for Allauth.
+ACCOUNT_LOGIN_METHODS = {"email"}
+
+# Email is mandatory for Allauth registration.
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+
+# Keep email verification mandatory for Allauth-created accounts.
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+# Prevent users from automatically signing in before verification.
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+
+# Do not automatically connect a social account to an existing account
+# just because the email addresses match.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+
+# New social accounts must go through the BXB signup process.
+SOCIALACCOUNT_AUTO_SIGNUP = False
+
+# Redirect after successful authentication.
+LOGIN_REDIRECT_URL = "/feed/"
+
+
+# ----------------------------------------------------------------------
+# SOCIAL ACCOUNT PROVIDERS
+# ----------------------------------------------------------------------
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+            "secret": os.getenv("GOOGLE_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+    },
+
+    "github": {
+        "SCOPE": [
+            "user:email",
+        ],
+    },
+}
 
 
 # ----------------------------------------------------------------------
@@ -186,7 +320,7 @@ SITE_URL = "http://localhost:8000"
 
 
 # ----------------------------------------------------------------------
-# WEBSOCKET CHAT (Django Channels)
+# WEBSOCKET CHAT (DJANGO CHANNELS)
 # ----------------------------------------------------------------------
 
 ASGI_APPLICATION = "config.asgi.application"
