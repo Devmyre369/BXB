@@ -11,6 +11,7 @@ from notifications.services import notify
 from django.db.models import Q
 from .forms import HubCreateForm
 from .models import Hub, HubMembership, HubJoinRequest
+from django.core.exceptions import PermissionDenied
 
 @login_required
 def hub_list(request):
@@ -344,3 +345,54 @@ def reject_join_request(request, request_id):
     messages.success(request, "The join request has been rejected.")
 
     return redirect("hubs:hub_detail", slug=hub.slug)
+
+
+@login_required
+def delete_hub_confirm(request, slug):
+    hub = get_object_or_404(Hub, slug=slug)
+
+    # Only the original creator can access the deletion page.
+    if hub.created_by_id != request.user.id:
+        raise PermissionDenied
+
+    # The creator must also retain the OWNER role.
+    is_owner = HubMembership.objects.filter(
+        hub=hub,
+        user=request.user,
+        role=HubMembership.Role.OWNER,
+    ).exists()
+
+    if not is_owner:
+        raise PermissionDenied
+
+    # Process deletion only after a valid POST request.
+    if request.method == "POST":
+        entered_name = request.POST.get("hub_name", "").strip()
+
+        if entered_name != hub.name:
+            messages.error(
+                request,
+                "The Hub name does not match. Please try again.",
+            )
+            return render(
+                request,
+                "bxb_hubs/hub_delete_confirm.html",
+                {"hub": hub},
+                status=400,
+            )
+
+        hub.delete()
+
+        messages.success(
+            request,
+            "Hub deleted successfully.",
+        )
+
+        return redirect("hubs:hub_list")
+
+    # GET only displays the confirmation page.
+    return render(
+        request,
+        "bxb_hubs/hub_delete_confirm.html",
+        {"hub": hub},
+    )

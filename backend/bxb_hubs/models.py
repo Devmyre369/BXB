@@ -1,10 +1,7 @@
-from django.db import models
-
-# Create your models here.
 
 from django.conf import settings
 from django.db import models
-from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 
 class Hub(models.Model):
@@ -23,6 +20,19 @@ class Hub(models.Model):
     slug = models.SlugField(max_length=180, unique=True)
 
     description = models.TextField(blank=True)
+
+    # Hub visual identity
+    logo = CloudinaryField(
+        "image",
+        blank=True,
+        null=True,
+    )
+
+    banner = CloudinaryField(
+        "image",
+        blank=True,
+        null=True,
+    )
 
     category = models.CharField(
         max_length=20,
@@ -91,7 +101,6 @@ class HubMembership(models.Model):
         return f"{self.user} - {self.hub} ({self.role})"
 
 
-
 class HubJoinRequest(models.Model):
 
     class Status(models.TextChoices):
@@ -143,7 +152,4 @@ class HubJoinRequest(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f"{self.user} → {self.hub} "
-            f"({self.status})"
-        )
+        return f"{self.user} → {self.hub} ({self.status})"

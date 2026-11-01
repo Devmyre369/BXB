@@ -106,6 +106,80 @@
         line-height: 1.6;
     }
 
+    .hub-section-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 28px 0;
+    }
+
+    .hub-branding-heading {
+        font-size: 17px;
+        font-weight: 750;
+        margin-bottom: 7px;
+    }
+
+    .hub-branding-intro {
+        color: var(--text-muted);
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 22px;
+    }
+
+    .hub-image-upload {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .hub-image-upload input[type="file"] {
+        width: 100%;
+        padding: 11px;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        font-size: 12px;
+    }
+
+    .hub-image-preview {
+        display: none;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--bg-secondary);
+    }
+
+    .hub-image-preview img {
+        display: block;
+        width: 100%;
+        object-fit: contain;
+        max-height: 260px;
+    }
+
+    .hub-logo-preview {
+        width: 130px;
+        height: 130px;
+    }
+
+    .hub-logo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hub-banner-preview {
+        width: 100%;
+        max-width: 500px;
+        aspect-ratio: 16 / 9;
+    }
+
+    .hub-banner-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
     .hub-checkbox-row {
         display: flex;
         align-items: flex-start;
@@ -174,6 +248,7 @@
     .hub-button-primary {
         color: white;
         background: linear-gradient(135deg, var(--blue-light), var(--blue-dark));
+        border: none;
     }
 
     .hub-button-secondary {
@@ -192,7 +267,9 @@
 <main class="hub-page">
     <span class="hub-eyebrow">BXB · Hubs</span>
 
-    <h1 class="hub-heading">Create your Hub<span style="color:var(--blue-light)">.</span></h1>
+    <h1 class="hub-heading">
+        Create your Hub<span style="color:var(--blue-light)">.</span>
+    </h1>
 
     <p class="hub-subtitle">
         Bring your college, club, organization, or community together.
@@ -205,7 +282,7 @@
             Start with the basics. You can build out your Hub as your community grows.
         </p>
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
@@ -225,11 +302,61 @@
             <div class="hub-field">
                 <label for="{{ form.description.id_for_label }}">Description</label>
                 {{ form.description }}
-                <span class="hub-help">Explain what your Hub is about and who should join.</span>
+                <span class="hub-help">
+                    Explain what your Hub is about and who should join.
+                </span>
                 {% for error in form.description.errors %}
                     <span class="hub-error">{{ error }}</span>
                 {% endfor %}
             </div>
+
+            <div class="hub-section-divider"></div>
+
+            <h3 class="hub-branding-heading">Hub branding</h3>
+            <p class="hub-branding-intro">
+                Give your Hub its own identity with a logo and cover banner.
+                Both images are optional and can be added later.
+            </p>
+
+            <div class="hub-image-upload">
+                <label for="{{ form.logo.id_for_label }}">Hub logo</label>
+
+                {{ form.logo }}
+
+                <span class="hub-help">
+                    Recommended: square image (1:1 ratio), ideally 500 × 500 pixels.
+                    JPG, PNG or WebP.
+                </span>
+
+                <div class="hub-image-preview hub-logo-preview" id="logoPreview">
+                    <img id="logoPreviewImage" alt="Hub logo preview">
+                </div>
+
+                {% for error in form.logo.errors %}
+                    <span class="hub-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="hub-image-upload">
+                <label for="{{ form.banner.id_for_label }}">Hub banner</label>
+
+                {{ form.banner }}
+
+                <span class="hub-help">
+                    Recommended: wide image (16:9 ratio), ideally 1600 × 900 pixels.
+                    JPG, PNG or WebP.
+                </span>
+
+                <div class="hub-image-preview hub-banner-preview" id="bannerPreview">
+                    <img id="bannerPreviewImage" alt="Hub banner preview">
+                </div>
+
+                {% for error in form.banner.errors %}
+                    <span class="hub-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="hub-section-divider"></div>
 
             <div class="hub-field">
                 <label for="{{ form.category.id_for_label }}">Category *</label>
@@ -240,9 +367,13 @@
             </div>
 
             <div class="hub-field">
-                <label for="{{ form.institution.id_for_label }}">Institution or organization</label>
+                <label for="{{ form.institution.id_for_label }}">
+                    Institution or organization
+                </label>
                 {{ form.institution }}
-                <span class="hub-help">Optional. For example, your college, company, or institution.</span>
+                <span class="hub-help">
+                    Optional. For example, your college, company, or institution.
+                </span>
                 {% for error in form.institution.errors %}
                     <span class="hub-error">{{ error }}</span>
                 {% endfor %}
@@ -251,8 +382,13 @@
             <div class="hub-checkbox-row">
                 {{ form.is_public }}
                 <div>
-                    <label for="{{ form.is_public.id_for_label }}">Make this Hub public</label>
-                    <p>Public Hubs can be viewed by logged-in BXB users. Private Hubs are visible only to their members.</p>
+                    <label for="{{ form.is_public.id_for_label }}">
+                        Make this Hub public
+                    </label>
+                    <p>
+                        Public Hubs can be viewed by logged-in BXB users.
+                        Private Hubs are visible only to their members.
+                    </p>
                     {% for error in form.is_public.errors %}
                         <span class="hub-error">{{ error }}</span>
                     {% endfor %}
@@ -261,6 +397,7 @@
 
             <div class="hub-actions">
                 <a href="/" class="hub-button hub-button-secondary">Cancel</a>
+
                 <button type="submit" class="hub-button hub-button-primary">
                     Create Hub →
                 </button>
@@ -268,4 +405,54 @@
         </form>
     </section>
 </main>
+
+<script>
+    function setupHubImagePreview(inputId, previewId, imageId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        const image = document.getElementById(imageId);
+
+        if (!input || !preview || !image) return;
+
+        let previousUrl = null;
+
+        input.addEventListener("change", function () {
+            const file = this.files && this.files[0];
+
+            if (previousUrl) {
+                URL.revokeObjectURL(previousUrl);
+                previousUrl = null;
+            }
+
+            if (!file) {
+                preview.style.display = "none";
+                image.removeAttribute("src");
+                return;
+            }
+
+            if (!file.type.startsWith("image/")) {
+                this.value = "";
+                preview.style.display = "none";
+                alert("Please select a valid image file.");
+                return;
+            }
+
+            previousUrl = URL.createObjectURL(file);
+            image.src = previousUrl;
+            preview.style.display = "block";
+        });
+    }
+
+    setupHubImagePreview(
+        "{{ form.logo.id_for_label }}",
+        "logoPreview",
+        "logoPreviewImage"
+    );
+
+    setupHubImagePreview(
+        "{{ form.banner.id_for_label }}",
+        "bannerPreview",
+        "bannerPreviewImage"
+    );
+</script>
 {% endblock %}

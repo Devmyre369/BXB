@@ -38,6 +38,7 @@ urlpatterns = [
 ]
 '''
 
+
 from django.urls import path
 
 from . import views
@@ -69,6 +70,13 @@ urlpatterns = [
         "<slug:slug>/cancel-join/",
         views.cancel_join_request,
         name="cancel_join_request",
+    ),
+
+    # Hub deletion confirmation
+    path(
+        "<slug:slug>/delete/confirm/",
+        views.delete_hub_confirm,
+        name="delete_hub_confirm",
     ),
 
     # Hub detail — keep this last

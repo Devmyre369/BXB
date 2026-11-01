@@ -10,6 +10,8 @@ class HubCreateForm(forms.ModelForm):
         fields = [
             "name",
             "description",
+            "logo",
+            "banner",
             "category",
             "institution",
             "is_public",
@@ -27,6 +29,18 @@ class HubCreateForm(forms.ModelForm):
                     "placeholder": "What is this Hub about?",
                     "rows": 4,
                     "class": "form-control",
+                }
+            ),
+            "logo": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
+                }
+            ),
+            "banner": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
                 }
             ),
             "category": forms.Select(

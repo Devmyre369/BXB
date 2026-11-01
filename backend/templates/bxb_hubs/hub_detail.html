@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}{{ hub.name }} | BXB Hubs{% endblock %}
@@ -97,10 +96,17 @@
         font-size: 13px;
     }
 
-    .hub-stat:last-child { border-bottom: 0; }
+    .hub-stat:last-child {
+        border-bottom: 0;
+    }
 
-    .hub-stat span:first-child { color: var(--text-muted); }
-    .hub-stat strong { color: var(--text-primary); }
+    .hub-stat span:first-child {
+        color: var(--text-muted);
+    }
+
+    .hub-stat strong {
+        color: var(--text-primary);
+    }
 
     .hub-owner-note {
         margin-top: 18px;
@@ -224,6 +230,35 @@
         text-align: center;
     }
 
+    /* DELETE HUB — DANGER ZONE */
+
+    .hub-danger-zone {
+        margin-top: 22px;
+        padding: 23px;
+        background: rgba(239,68,68,.035);
+        border: 1px solid rgba(239,68,68,.25);
+        border-radius: 16px;
+    }
+
+    .hub-danger-zone h2 {
+        color: #f87171;
+        font-size: 17px;
+        margin-bottom: 9px;
+    }
+
+    .hub-danger-zone p {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.7;
+        margin-bottom: 17px;
+    }
+
+    .hub-delete-confirm {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     .hub-messages {
         margin-bottom: 18px;
     }
@@ -237,9 +272,17 @@
     }
 
     @media (max-width: 700px) {
-        .hub-detail-page { padding: 24px 14px 45px; }
-        .hub-detail-grid { grid-template-columns: 1fr; }
-        .hub-request-item { align-items: flex-start; }
+        .hub-detail-page {
+            padding: 24px 14px 45px;
+        }
+
+        .hub-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hub-request-item {
+            align-items: flex-start;
+        }
     }
 </style>
 
@@ -260,6 +303,7 @@
     {% endif %}
 
     <section class="hub-cover">
+
         <span class="hub-detail-eyebrow">BXB · Hubs</span>
 
         <h1 class="hub-detail-title">
@@ -275,12 +319,21 @@
         </p>
 
         <div class="hub-meta">
+
             <span>{{ hub.get_category_display }}</span>
-            <span>{% if hub.is_public %}Public Hub{% else %}Private Hub{% endif %}</span>
+
+            <span>
+                {% if hub.is_public %}
+                    Public Hub
+                {% else %}
+                    Private Hub
+                {% endif %}
+            </span>
 
             {% if hub.institution %}
                 <span>{{ hub.institution }}</span>
             {% endif %}
+
         </div>
 
         <div class="hub-action-area">
@@ -300,32 +353,40 @@
                 <form method="POST"
                       action="{% url 'hubs:cancel_join_request' hub.slug %}"
                       style="margin-top:12px;">
+
                     {% csrf_token %}
+
                     <button type="submit"
                             class="hub-action-button hub-secondary-button">
                         Cancel Request
                     </button>
+
                 </form>
 
             {% else %}
 
                 <form method="POST"
                       action="{% url 'hubs:request_to_join' hub.slug %}">
+
                     {% csrf_token %}
+
                     <button type="submit"
                             class="hub-action-button hub-primary-button">
                         Request to Join Hub →
                     </button>
+
                 </form>
 
             {% endif %}
 
         </div>
+
     </section>
 
     <div class="hub-detail-grid">
 
         <section class="hub-detail-card">
+
             <h2>Welcome to {{ hub.name }}</h2>
 
             <p>
@@ -338,9 +399,11 @@
                     You are a {{ membership.get_role_display }} of this Hub.
                 </div>
             {% endif %}
+
         </section>
 
         <aside class="hub-detail-card">
+
             <h2>Hub information</h2>
 
             <div class="hub-stat">
@@ -361,14 +424,20 @@
             <div class="hub-stat">
                 <span>Visibility</span>
                 <strong>
-                    {% if hub.is_public %}Public{% else %}Private{% endif %}
+                    {% if hub.is_public %}
+                        Public
+                    {% else %}
+                        Private
+                    {% endif %}
                 </strong>
             </div>
+
         </aside>
 
     </div>
 
     {% if is_owner %}
+
         <section class="hub-detail-card hub-request-section">
 
             <h2>Membership Requests</h2>
@@ -385,6 +454,7 @@
                     <div class="hub-request-item">
 
                         <div>
+
                             <div class="hub-request-user">
                                 {{ join_request.user.username }}
                             </div>
@@ -392,26 +462,33 @@
                             <div class="hub-request-date">
                                 Requested {{ join_request.requested_at|date:"d M Y, H:i" }}
                             </div>
+
                         </div>
 
                         <div class="hub-request-actions">
 
                             <form method="POST"
                                   action="{% url 'hubs:accept_join_request' join_request.id %}">
+
                                 {% csrf_token %}
+
                                 <button type="submit"
                                         class="hub-action-button hub-primary-button">
                                     Accept
                                 </button>
+
                             </form>
 
                             <form method="POST"
                                   action="{% url 'hubs:reject_join_request' join_request.id %}">
+
                                 {% csrf_token %}
+
                                 <button type="submit"
                                         class="hub-action-button hub-danger-button">
                                     Reject
                                 </button>
+
                             </form>
 
                         </div>
@@ -425,11 +502,43 @@
                     </div>
 
                 {% endfor %}
+tion class="hub-danger-zone">
+
+            <h2>Danger Zone</h2>
 
             </div>
 
         </section>
+
     {% endif %}
+
+    <!-- DELETE HUB: ONLY THE ORIGINAL CREATOR CAN SEE THIS -->
+
+    
+<!-- DELETE HUB: ONLY THE ORIGINAL CREATOR CAN SEE THIS -->
+
+{% if is_owner and hub.created_by_id == request.user.id %}
+
+    <section class="hub-danger-zone">
+
+        <h2>Danger Zone</h2>
+
+        <p>
+            Deleting this Hub is permanent. All associated memberships
+            and pending join requests will also be deleted.
+            This action cannot be undone.
+        </p>
+
+        <a
+            href="{% url 'hubs:delete_hub_confirm' hub.slug %}"
+            class="hub-action-button hub-danger-button"
+        >
+            Delete Hub
+        </a>
+
+    </section>
+
+{% endif %}
 
 </main>
 {% endblock %}

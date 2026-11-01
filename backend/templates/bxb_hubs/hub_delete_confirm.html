@@ -1,0 +1,159 @@
+
+{% extends "base.html" %}
+
+{% block title %}Delete {{ hub.name }} | BXB{% endblock %}
+
+{% block content %}
+
+<style>
+.delete-page {
+    max-width: 620px;
+    margin: 55px auto;
+    padding: 30px;
+    background: var(--bg-card, #151515);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 18px;
+    color: var(--text-primary, white);
+}
+
+.delete-page h1 {
+    color: #f87171;
+    font-size: 25px;
+    margin-bottom: 14px;
+}
+
+.delete-warning {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.delete-page label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.delete-page input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 13px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.delete-button,
+.cancel-button {
+    padding: 12px 18px;
+    border-radius: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+}
+
+.delete-button {
+    background: #dc2626;
+    color: white;
+}
+
+.delete-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.cancel-button {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+</style>
+
+<div class="delete-page">
+
+    <div style="font-size:36px; margin-bottom:18px;">⚠️</div>
+
+    <h1>Permanently Delete Hub</h1>
+
+    <p class="delete-warning">
+        You are about to permanently delete
+        <strong>{{ hub.name }}</strong>.
+
+        All associated memberships and pending join requests
+        will also be deleted.
+
+        This action cannot be undone.
+    </p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label for="hub_name">
+            Type <strong>{{ hub.name }}</strong> to confirm:
+        </label>
+
+        <input
+            type="text"
+            id="hub_name"
+            name="hub_name"
+            placeholder="Enter the exact Hub name"
+            autocomplete="off"
+            required
+        >
+
+        <div class="delete-actions">
+
+            <button
+                type="submit"
+                id="deleteButton"
+                class="delete-button"
+                disabled
+            >
+                Permanently Delete Hub
+            </button>
+
+            <a
+                href="{% url 'hubs:hub_detail' hub.slug %}"
+                class="cancel-button"
+            >
+                Cancel
+            </a>
+
+        </div>
+    </form>
+
+</div>
+
+{{ hub.name|json_script:"hub-name-data" }}
+
+<script>
+    const expectedName = JSON.parse(
+        document.getElementById("hub-name-data").textContent
+    );
+
+    const nameInput = document.getElementById("hub_name");
+    const deleteButton = document.getElementById("deleteButton");
+
+    nameInput.addEventListener("input", function () {
+        deleteButton.disabled =
+            this.value.trim() !== expectedName;
+    });
+</script>
+
+{% endblock %}
