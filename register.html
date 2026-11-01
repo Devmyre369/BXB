@@ -1,4 +1,6 @@
+
 {% extends "base.html" %}
+{% load socialaccount %}
 
 {% block title %}Create Account | BitsXBytes{% endblock %}
 
@@ -47,25 +49,15 @@
         width: 58px;
         height: 58px;
         margin: 0 auto 16px;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
         border-radius: 16px;
-
-        background: linear-gradient(
-            135deg,
-            #3b82f6,
-            #2563eb
-        );
-
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: white;
-
         font-family: "Space Grotesk", sans-serif;
         font-size: 25px;
         font-weight: 800;
-
         box-shadow:
             0 12px 35px rgba(37, 99, 235, 0.35),
             inset 0 1px 0 rgba(255,255,255,.2);
@@ -73,9 +65,7 @@
 
     .auth-brand h1 {
         margin: 0 0 7px;
-
         color: var(--text-primary);
-
         font-family: "Space Grotesk", sans-serif;
         font-size: 26px;
         font-weight: 700;
@@ -83,7 +73,6 @@
 
     .auth-brand p {
         margin: 0;
-
         color: var(--text-secondary);
         font-size: 14px;
     }
@@ -92,16 +81,12 @@
 
     .auth-card {
         background: rgba(16, 21, 33, 0.94);
-
         border: 1px solid var(--border);
         border-radius: 20px;
-
         padding: 32px;
-
         box-shadow:
             0 25px 70px rgba(0,0,0,.35),
             inset 0 1px 0 rgba(255,255,255,.03);
-
         backdrop-filter: blur(18px);
     }
 
@@ -111,16 +96,13 @@
 
     .auth-card-header h2 {
         margin: 0 0 7px;
-
         color: var(--text-primary);
-
         font-family: "Space Grotesk", sans-serif;
         font-size: 21px;
     }
 
     .auth-card-header p {
         margin: 0;
-
         color: var(--text-secondary);
         font-size: 13px;
         line-height: 1.6;
@@ -132,16 +114,13 @@
         display: flex;
         align-items: center;
         gap: 8px;
-
         margin-bottom: 26px;
     }
 
     .progress-step {
         height: 4px;
         flex: 1;
-
         border-radius: 999px;
-
         background: #1e293b;
     }
 
@@ -151,7 +130,6 @@
 
     .progress-label {
         margin-left: 4px;
-
         color: #64748b;
         font-size: 11px;
         white-space: nowrap;
@@ -165,11 +143,8 @@
 
     .register-form label {
         display: block;
-
         margin-bottom: 7px;
-
         color: #cbd5e1;
-
         font-size: 13px;
         font-weight: 600;
     }
@@ -177,21 +152,14 @@
     .register-form input {
         width: 100%;
         box-sizing: border-box;
-
         padding: 12px 14px;
-
         background: #0b0f19;
-
         border: 1px solid rgba(255,255,255,.09);
         border-radius: 10px;
-
         color: var(--text-primary);
-
         font-family: inherit;
         font-size: 14px;
-
         outline: none;
-
         transition: all 180ms ease;
     }
 
@@ -201,10 +169,7 @@
 
     .register-form input:focus {
         border-color: rgba(59,130,246,.65);
-
-        box-shadow:
-            0 0 0 3px rgba(59,130,246,.10);
-
+        box-shadow: 0 0 0 3px rgba(59,130,246,.10);
         background: #0d1320;
     }
 
@@ -212,29 +177,20 @@
 
     .errorlist {
         list-style: none;
-
         padding: 0;
         margin: 7px 0 0;
-
         color: #f87171;
-
         font-size: 12px;
         line-height: 1.5;
     }
 
     .form-errors {
         background: rgba(239,68,68,.08);
-
         border: 1px solid rgba(239,68,68,.18);
-
         border-radius: 10px;
-
         padding: 12px 14px;
-
         margin-bottom: 20px;
-
         color: #fca5a5;
-
         font-size: 13px;
     }
 
@@ -242,11 +198,8 @@
 
     .helptext {
         display: block;
-
         margin-top: 7px;
-
         color: #64748b;
-
         font-size: 11px;
         line-height: 1.5;
     }
@@ -255,29 +208,16 @@
 
     .register-btn {
         width: 100%;
-
         border: none;
         border-radius: 10px;
-
         padding: 13px 16px;
-
-        background: linear-gradient(
-            135deg,
-            #3b82f6,
-            #2563eb
-        );
-
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: white;
-
         font-family: inherit;
         font-size: 14px;
         font-weight: 700;
-
         cursor: pointer;
-
-        box-shadow:
-            0 8px 25px rgba(37,99,235,.25);
-
+        box-shadow: 0 8px 25px rgba(37,99,235,.25);
         transition:
             transform 180ms ease,
             box-shadow 180ms ease,
@@ -286,11 +226,8 @@
 
     .register-btn:hover {
         transform: translateY(-1px);
-
         filter: brightness(1.08);
-
-        box-shadow:
-            0 12px 30px rgba(37,99,235,.35);
+        box-shadow: 0 12px 30px rgba(37,99,235,.35);
     }
 
     .register-btn:active {
@@ -303,23 +240,54 @@
         display: flex;
         align-items: center;
         gap: 12px;
-
         margin: 25px 0;
-
-        color: #475569;
-
+        color: #64748b;
         font-size: 11px;
+        font-weight: 600;
     }
 
     .auth-divider::before,
     .auth-divider::after {
         content: "";
-
         height: 1px;
-
         flex: 1;
-
         background: rgba(255,255,255,.07);
+    }
+
+    /* Google OAuth */
+
+    .google-button {
+        width: 100%;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #ffffff;
+        color: #1f2937;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s, transform .2s, box-shadow .2s;
+    }
+
+    .google-button:hover {
+        background: #f8fafc;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
+    }
+
+    .google-button:active {
+        transform: translateY(0);
+    }
+
+    .google-icon {
+        width: 19px;
+        height: 19px;
+        flex-shrink: 0;
     }
 
     /* Login */
@@ -330,19 +298,14 @@
 
     .login-box p {
         margin: 0;
-
         color: var(--text-secondary);
-
         font-size: 13px;
     }
 
     .login-box a {
         color: var(--blue-light);
-
         text-decoration: none;
-
         font-weight: 600;
-
         margin-left: 4px;
     }
 
@@ -356,44 +319,30 @@
         display: flex;
         align-items: flex-start;
         gap: 10px;
-
         margin-top: 20px;
-
         padding: 12px 14px;
-
         background: rgba(59,130,246,.06);
-
         border: 1px solid rgba(59,130,246,.12);
-
         border-radius: 10px;
     }
 
     .verification-icon {
         width: 24px;
         height: 24px;
-
         flex-shrink: 0;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
         border-radius: 7px;
-
         background: rgba(59,130,246,.12);
-
         color: #60a5fa;
-
         font-size: 12px;
     }
 
     .verification-note p {
         margin: 0;
-
         color: #64748b;
-
         font-size: 11px;
-
         line-height: 1.55;
     }
 
@@ -404,7 +353,6 @@
     /* Mobile */
 
     @media (max-width: 520px) {
-
         .auth-page {
             padding: 25px 14px;
         }
@@ -491,6 +439,8 @@
             {% endif %}
 
 
+            <!-- Existing Email/OTP Registration -->
+
             <form method="post" class="register-form">
 
                 {% csrf_token %}
@@ -568,6 +518,47 @@
 
                 <button type="submit" class="register-btn">
                     Continue to verification →
+                </button>
+
+            </form>
+
+
+            <!-- Google OAuth Signup -->
+
+            <div class="auth-divider">
+                OR SIGN UP WITH
+            </div>
+
+            <form
+                method="post"
+                action="{% provider_login_url 'google' process='login' %}"
+            >
+                {% csrf_token %}
+
+                <button type="submit" class="google-button">
+
+                    <svg
+                        class="google-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 48 48"
+                        aria-hidden="true"
+                    >
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+
+                        <path fill="#4285F4"
+                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.43 37.97 46.98 31.87 46.98 24.55z"/>
+
+                        <path fill="#FBBC05"
+                            d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19z"/>
+
+                        <path fill="#34A853"
+                            d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+
+                    </svg>
+
+                    Continue with Google
+
                 </button>
 
             </form>

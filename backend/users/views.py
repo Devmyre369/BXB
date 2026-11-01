@@ -1,4 +1,5 @@
 ﻿
+
 import random
 from datetime import timedelta
 
@@ -18,7 +19,7 @@ from .forms import RegistrationForm
 from .models import EmailOTP, User
 from .utils import send_otp_email
 
-
+'''
 def register(request):
     if request.user.is_authenticated:
         return redirect("feed")
@@ -29,7 +30,9 @@ def register(request):
         if form.is_valid():
             username = form.cleaned_data["username"]
             email = form.cleaned_data["email"]
-            password = form.cleaned_data["password"]
+
+            # UserCreationForm uses password1 and password2.
+            password = form.cleaned_data["password1"]
 
             otp = str(random.randint(100000, 999999))
 
@@ -58,6 +61,40 @@ def register(request):
         {"form": form},
     )
 
+'''
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("feed")
+
+    if request.method == "POST":
+        form = RegistrationForm(request.POST)
+
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password1"]
+
+            request.session["registration_data"] = {
+                "username": username,
+                "email": email,
+                "password": password,
+            }
+
+            # This function generates, saves and emails the OTP.
+            send_otp_email(email)
+
+            return redirect("verify_otp")
+
+    else:
+        form = RegistrationForm()
+
+    return render(
+        request,
+        "users/register.html",
+        {"form": form},
+    )
 
 def verify_otp(request):
     if request.user.is_authenticated:
