@@ -260,6 +260,10 @@ SITE_ID = 1
 # ----------------------------------------------------------------------
 
 # Use email as the primary login identifier for Allauth.
+
+SOCIALACCOUNT_ADAPTER = "users.adapters.BXBSocialAccountAdapter"
+ACCOUNT_ADAPTER = "users.adapters.BXBAccountAdapter"
+
 ACCOUNT_LOGIN_METHODS = {"email"}
 
 # Email is mandatory for Allauth registration.

@@ -1,8 +1,7 @@
 
 {% extends "base.html" %}
-{% load socialaccount %}
 
-{% block title %}Sign In | BitsXBytes{% endblock %}
+{% block title %}Complete Your Profile | BitsXBytes{% endblock %}
 
 {% block content %}
 
@@ -11,51 +10,33 @@
         --auth-bg-card: #101521;
         --auth-border-card: rgba(255, 255, 255, .09);
         --auth-shadow-card: 0 24px 70px rgba(0, 0, 0, .3);
-
         --auth-text-title: #f8fafc;
         --auth-text-subtitle: #94a3b8;
         --auth-text-label: #cbd5e1;
-        --auth-text-footer: #94a3b8;
-
         --auth-input-bg: #0b0f19;
         --auth-input-text: #f8fafc;
         --auth-input-border: #273247;
-        --auth-input-focus-border: #3b82f6;
-        --auth-input-focus-shadow: rgba(59, 130, 246, .14);
-
         --auth-link: #60a5fa;
-        --auth-link-hover: #93c5fd;
-
         --auth-note-bg: rgba(59, 130, 246, .07);
         --auth-note-border: rgba(59, 130, 246, .16);
-        --auth-note-text: #94a3b8;
     }
 
     [data-theme="light"], .light-theme {
         --auth-bg-card: #ffffff;
         --auth-border-card: #cbd5e1;
         --auth-shadow-card: 0 20px 40px rgba(0, 0, 0, .06);
-
         --auth-text-title: #0f172a;
         --auth-text-subtitle: #475569;
         --auth-text-label: #334155;
-        --auth-text-footer: #64748b;
-
         --auth-input-bg: #ffffff;
         --auth-input-text: #0f172a;
         --auth-input-border: #cbd5e1;
-        --auth-input-focus-border: #2563eb;
-        --auth-input-focus-shadow: rgba(37, 99, 235, .15);
-
         --auth-link: #2563eb;
-        --auth-link-hover: #1d4ed8;
-
         --auth-note-bg: rgba(37, 99, 235, .06);
         --auth-note-border: rgba(37, 99, 235, .18);
-        --auth-note-text: #475569;
     }
 
-    .auth-wrapper {
+    .onboarding-wrapper {
         min-height: calc(100vh - 110px);
         display: flex;
         align-items: center;
@@ -63,9 +44,9 @@
         padding: 32px 16px;
     }
 
-    .auth-card {
+    .onboarding-card {
         width: 100%;
-        max-width: 460px;
+        max-width: 620px;
         padding: 36px;
         background: var(--auth-bg-card);
         border: 1px solid var(--auth-border-card);
@@ -73,7 +54,7 @@
         box-shadow: var(--auth-shadow-card);
     }
 
-    .auth-logo {
+    .onboarding-logo {
         width: 52px;
         height: 52px;
         display: grid;
@@ -86,25 +67,36 @@
         margin-bottom: 24px;
     }
 
-    .auth-card h1 {
+    .onboarding-card h1 {
         color: var(--auth-text-title);
         font-size: 30px;
         margin: 0 0 10px;
         letter-spacing: -1px;
     }
 
-    .auth-subtitle {
+    .onboarding-subtitle {
         color: var(--auth-text-subtitle);
         font-size: 14px;
         line-height: 1.7;
-        margin: 0 0 28px;
+        margin: 0 0 26px;
     }
 
-    .auth-form p {
-        margin: 0 0 20px;
+    .onboarding-note {
+        margin-bottom: 24px;
+        padding: 13px;
+        background: var(--auth-note-bg);
+        border: 1px solid var(--auth-note-border);
+        border-radius: 10px;
+        color: var(--auth-text-subtitle);
+        font-size: 12px;
+        line-height: 1.7;
     }
 
-    .auth-form label {
+    .onboarding-form .form-field {
+        margin-bottom: 20px;
+    }
+
+    .onboarding-form label {
         display: block;
         color: var(--auth-text-label);
         font-size: 13px;
@@ -112,7 +104,9 @@
         margin-bottom: 8px;
     }
 
-    .auth-form input {
+    .onboarding-form input:not([type="checkbox"]),
+    .onboarding-form textarea,
+    .onboarding-form select {
         width: 100%;
         box-sizing: border-box;
         padding: 13px 14px;
@@ -125,12 +119,30 @@
         transition: border-color .2s, box-shadow .2s;
     }
 
-    .auth-form input:focus {
-        border-color: var(--auth-input-focus-border);
-        box-shadow: 0 0 0 3px var(--auth-input-focus-shadow);
+    .onboarding-form textarea {
+        min-height: 110px;
+        resize: vertical;
     }
 
-    .auth-errors {
+    .onboarding-form input:focus,
+    .onboarding-form textarea:focus,
+    .onboarding-form select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, .14);
+    }
+
+    .onboarding-form input[type="file"] {
+        padding: 10px;
+    }
+
+    .onboarding-form .helptext {
+        display: block;
+        margin-top: 6px;
+        color: var(--auth-text-subtitle);
+        font-size: 12px;
+    }
+
+    .onboarding-errors {
         color: #fecaca;
         background: rgba(239, 68, 68, .1);
         border: 1px solid rgba(239, 68, 68, .25);
@@ -141,17 +153,26 @@
         line-height: 1.6;
     }
 
-    .auth-field-error {
+    .onboarding-field-error {
         display: block;
         color: #fca5a5;
         font-size: 12px;
         margin-top: 7px;
     }
 
-    .auth-button {
+    .onboarding-section-title {
+        color: var(--auth-text-title);
+        font-size: 16px;
+        font-weight: 700;
+        margin: 28px 0 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--auth-border-card);
+    }
+
+    .onboarding-button {
         width: 100%;
         padding: 14px;
-        margin-top: 8px;
+        margin-top: 12px;
         color: white;
         background: #2563eb;
         border: 0;
@@ -162,217 +183,118 @@
         transition: background .2s, transform .2s;
     }
 
-    .auth-button:hover {
+    .onboarding-button:hover {
         background: #3b82f6;
         transform: translateY(-1px);
     }
 
-    .auth-button:active {
-        transform: translateY(0);
-    }
-
-    .auth-divider {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin: 24px 0 18px;
+    .onboarding-footer {
+        margin-top: 20px;
         color: var(--auth-text-subtitle);
         font-size: 12px;
-        font-weight: 600;
-    }
-
-    .auth-divider::before,
-    .auth-divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: var(--auth-border-card);
-    }
-
-    .google-button {
-        width: 100%;
-        min-height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 12px 16px;
-        background: #ffffff;
-        color: #1f2937;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background .2s, transform .2s, box-shadow .2s;
-    }
-
-    .google-button:hover {
-        background: #f8fafc;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
-    }
-
-    .google-button:active {
-        transform: translateY(0);
-    }
-
-    .google-icon {
-        width: 19px;
-        height: 19px;
-        flex-shrink: 0;
-    }
-
-    .auth-footer {
-        margin-top: 24px;
         text-align: center;
-        color: var(--auth-text-footer);
-        font-size: 13px;
-    }
-
-    .auth-footer a {
-        color: var(--auth-link);
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-    .auth-footer a:hover {
-        color: var(--auth-link-hover);
-    }
-
-    .auth-note {
-        margin-top: 22px;
-        padding: 13px;
-        background: var(--auth-note-bg);
-        border: 1px solid var(--auth-note-border);
-        border-radius: 10px;
-        color: var(--auth-note-text);
-        font-size: 12px;
-        line-height: 1.7;
-    }
-
-    .auth-back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 16px;
-        color: var(--auth-link);
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-        transition: color 0.2s;
-    }
-
-    .auth-back-link:hover {
-        color: var(--auth-link-hover);
     }
 
     @media (max-width: 520px) {
-        .auth-card {
+        .onboarding-card {
             padding: 26px 20px;
         }
 
-        .auth-card h1 {
+        .onboarding-card h1 {
             font-size: 26px;
         }
     }
 </style>
 
-<div class="auth-wrapper">
-    <div style="width: 100%; max-width: 460px;">
+<div class="onboarding-wrapper">
+    <section class="onboarding-card">
 
-        <a href="{% url 'home' %}" class="auth-back-link"
-           onclick="if (history.length > 1) { history.back(); return false; }">
-            ← Back
-        </a>
+        <div class="onboarding-logo">B</div>
 
-        <section class="auth-card">
+        <h1>Make yourself at home.</h1>
 
-            <div class="auth-logo">B</div>
+        <p class="onboarding-subtitle">
+            Welcome to BitsXBytes. Let's set up your profile so people can
+            discover your skills, interests, and what you're building.
+        </p>
 
-            <h1>Welcome back.</h1>
+        <div class="onboarding-note">
+            🔒 Your Google account is connected. Complete the details below
+            to finish creating your BXB profile. You only need to do this once.
+        </div>
 
-            <p class="auth-subtitle">
-                Your community is waiting.
-                Sign in to reconnect, discover opportunities, and keep building.
-            </p>
+        <form method="POST"
+              enctype="multipart/form-data"
+              class="onboarding-form">
 
-            <!-- Existing BXB username/password login -->
-            <form method="POST" action="" class="auth-form">
-                {% csrf_token %}
+            {% csrf_token %}
 
+            {% if username_error %}
+                <div class="onboarding-errors">
+                    {{ username_error }}
+                </div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="onboarding-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="form-field">
+                <label for="username">Choose your BXB username *</label>
                 <input
-                    type="hidden"
-                    name="next"
-                    value="{{ next|default:'' }}"
+                    type="text"
+                    id="username"
+                    name="username"
+                    value="{{ username }}"
+                    placeholder="e.g. devansh_builds"
+                    maxlength="150"
+                    required
                 >
-
-                {% if form.non_field_errors %}
-                    <div class="auth-errors">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                {% for field in form %}
-                    <p>
-                        {{ field.label_tag }}
-                        {{ field }}
-
-                        {% for error in field.errors %}
-                            <span class="auth-field-error">
-                                {{ error }}
-                            </span>
-                        {% endfor %}
-                    </p>
-                {% endfor %}
-
-                <button class="auth-button" type="submit">
-                    Sign in to BitsXBytes &rarr;
-                </button>
-            </form>
-
-            <!-- Google OAuth login -->
-            <div class="auth-divider">
-                OR CONTINUE WITH
+                <small class="helptext">
+                    This will be your unique identity on BitsXBytes.
+                </small>
             </div>
 
-            <form
-                method="post"
-                action="{% provider_login_url 'google' process='login' %}"
-            >
-                {% csrf_token %}
+            <h2 class="onboarding-section-title">Profile details</h2>
 
-                <button type="submit" class="google-button">
-                    <svg class="google-icon"
-                         xmlns="http://www.w3.org/2000/svg"
-                         viewBox="0 0 48 48"
-                         aria-hidden="true">
-                        <path fill="#EA4335"
-                              d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                        <path fill="#4285F4"
-                              d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.43 37.97 46.98 31.87 46.98 24.55z"/>
-                        <path fill="#FBBC05"
-                              d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19z"/>
-                        <path fill="#34A853"
-                              d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    </svg>
+            {% for field in form %}
+                <div class="form-field">
 
-                    Continue with Google
-                </button>
-            </form>
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}*{% endif %}
+                    </label>
 
-            <div class="auth-note">
-                &#128274; Your account, your community. Sign in securely with your
-                registered username and password, or continue with Google.
-            </div>
+                    {{ field }}
 
-            <div class="auth-footer">
-                New to BxB?
-                <a href="{% url 'register' %}">Create an account</a>
-            </div>
+                    {% if field.help_text %}
+                        <small class="helptext">
+                            {{ field.help_text }}
+                        </small>
+                    {% endif %}
 
-        </section>
-    </div>
+                    {% for error in field.errors %}
+                        <span class="onboarding-field-error">
+                            {{ error }}
+                        </span>
+                    {% endfor %}
+
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="onboarding-button">
+                Complete Profile & Enter BXB →
+            </button>
+
+        </form>
+
+        <div class="onboarding-footer">
+            You can update your profile details later from your profile settings.
+        </div>
+
+    </section>
 </div>
 
 {% endblock %}

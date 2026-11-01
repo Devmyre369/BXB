@@ -3,11 +3,16 @@ import random
 from datetime import timedelta
 
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
+
+from profiles.forms import ProfileForm
+from profiles.models import Profile
 
 from .forms import RegistrationForm
 from .models import EmailOTP, User
@@ -26,17 +31,14 @@ def register(request):
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
 
-            # Generate a six-digit OTP.
             otp = str(random.randint(100000, 999999))
 
-            # Store registration information temporarily.
             request.session["registration_data"] = {
                 "username": username,
                 "email": email,
                 "password": password,
             }
 
-            # Create OTP with a 10-minute expiry.
             EmailOTP.objects.create(
                 email=email,
                 otp=otp,
@@ -109,7 +111,6 @@ def verify_otp(request):
                     )
 
                 request.session.pop("registration_data", None)
-
                 login(request, user)
 
                 return redirect("feed")
@@ -144,10 +145,7 @@ def login_view(request):
         return redirect("feed")
 
     if request.method == "POST":
-        form = AuthenticationForm(
-            request,
-            data=request.POST,
-        )
+        form = AuthenticationForm(request, data=request.POST)
 
         if form.is_valid():
             user = form.get_user()
@@ -178,3 +176,72 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("home")
+
+
+@login_required
+def onboarding_view(request):
+    user = request.user
+
+    # Users who have already completed onboarding do not need it again.
+    if user.onboarding_completed:
+        return redirect("feed")
+
+    profile, created = Profile.objects.get_or_create(user=user)
+
+    username_error = None
+
+    if request.method == "POST":
+        submitted_username = request.POST.get("username", "").strip()
+
+        profile_form = ProfileForm(
+            request.POST,
+            request.FILES,
+            instance=profile,
+        )
+
+        try:
+            username_field = User._meta.get_field("username")
+            cleaned_username = username_field.clean(
+                submitted_username,
+                user,
+            )
+
+            if User.objects.filter(
+                username__iexact=cleaned_username
+            ).exclude(pk=user.pk).exists():
+                username_error = "This username is already taken."
+
+        except ValidationError as error:
+            username_error = error.messages[0]
+
+        if profile_form.is_valid() and not username_error:
+            try:
+                with transaction.atomic():
+                    user.username = cleaned_username
+                    user.onboarding_completed = True
+                    user.save(
+                        update_fields=[
+                            "username",
+                            "onboarding_completed",
+                        ]
+                    )
+
+                    profile_form.save()
+
+                return redirect("feed")
+
+            except IntegrityError:
+                username_error = "This username is already taken."
+
+    else:
+        profile_form = ProfileForm(instance=profile)
+
+    return render(
+        request,
+        "users/onboarding.html",
+        {
+            "form": profile_form,
+            "username": user.username,
+            "username_error": username_error,
+        },
+    )

@@ -1,6 +1,13 @@
+
 from django.urls import path
 
-from .views import login_view, logout_view, register, verify_otp
+from .views import (
+    login_view,
+    logout_view,
+    register,
+    verify_otp,
+    onboarding_view,
+)
 
 app_name = "users"
 
@@ -9,4 +16,5 @@ urlpatterns = [
     path("verify-otp/", verify_otp, name="verify_otp"),
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
+    path("onboarding/", onboarding_view, name="onboarding"),
 ]

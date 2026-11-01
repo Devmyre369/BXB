@@ -1,3 +1,4 @@
+
 """URL configuration for the project."""
 
 from django.conf import settings
@@ -16,17 +17,34 @@ from profiles.views import (
     unfollow_user,
     user_posts,
 )
-from users.views import login_view, logout_view, register, verify_otp
+
+from users.views import (
+    login_view,
+    logout_view,
+    register,
+    verify_otp,
+    onboarding_view,
+)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
+    # Core application
     path("", include("core.urls")),
+
+    # Authentication
     path("auth/login/", login_view, name="login"),
     path("auth/register/", register, name="register"),
     path("auth/verify-otp/", verify_otp, name="verify_otp"),
     path("auth/logout/", logout_view, name="logout"),
+    path("auth/onboarding/", onboarding_view, name="onboarding"),
+
+    # Django Allauth
     path("auth/", include("users.urls", namespace="users")),
     path("auth/", include("allauth.urls")),
+
+    # Profiles
     path("profile/", my_profile, name="my_profile"),
     path("profile/edit/", edit_profile, name="edit_profile"),
     path("profile/u/<str:username>/", public_profile, name="public_profile"),
@@ -53,6 +71,8 @@ urlpatterns = [
         name="unfollow_user",
     ),
     path("profile/", include("profiles.urls", namespace="profiles")),
+
+    # BXB applications
     path("feed/", include("posts.urls")),
     path("search/", include("search.urls")),
     path("handshake/", include("handshake.urls")),
@@ -63,8 +83,11 @@ urlpatterns = [
     path("publish/", include("publish.urls")),
     path("vibespace/", include("vibespace.urls", namespace="vibespace")),
     path("hubs/", include("bxb_hubs.urls")),
-    
 ]
 
+
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT,
+    )
