@@ -1,5 +1,4 @@
 ﻿
-
 import random
 from datetime import timedelta
 
@@ -19,50 +18,10 @@ from .forms import RegistrationForm
 from .models import EmailOTP, User
 from .utils import send_otp_email
 
-'''
-def register(request):
-    if request.user.is_authenticated:
-        return redirect("feed")
 
-    if request.method == "POST":
-        form = RegistrationForm(request.POST)
-
-        if form.is_valid():
-            username = form.cleaned_data["username"]
-            email = form.cleaned_data["email"]
-
-            # UserCreationForm uses password1 and password2.
-            password = form.cleaned_data["password1"]
-
-            otp = str(random.randint(100000, 999999))
-
-            request.session["registration_data"] = {
-                "username": username,
-                "email": email,
-                "password": password,
-            }
-
-            EmailOTP.objects.create(
-                email=email,
-                otp=otp,
-                expires_at=timezone.now() + timedelta(minutes=10),
-            )
-
-            send_otp_email(email, otp)
-
-            return redirect("verify_otp")
-
-    else:
-        form = RegistrationForm()
-
-    return render(
-        request,
-        "users/register.html",
-        {"form": form},
-    )
-
-'''
-
+# ----------------------------------------------------------------------
+# REGISTRATION
+# ----------------------------------------------------------------------
 
 def register(request):
     if request.user.is_authenticated:
@@ -82,7 +41,7 @@ def register(request):
                 "password": password,
             }
 
-            # This function generates, saves and emails the OTP.
+            # Generate, save and send OTP.
             send_otp_email(email)
 
             return redirect("verify_otp")
@@ -95,6 +54,11 @@ def register(request):
         "users/register.html",
         {"form": form},
     )
+
+
+# ----------------------------------------------------------------------
+# OTP VERIFICATION
+# ----------------------------------------------------------------------
 
 def verify_otp(request):
     if request.user.is_authenticated:
@@ -133,22 +97,33 @@ def verify_otp(request):
         elif submitted_otp != otp_record.otp:
             otp_record.attempts += 1
             otp_record.save(update_fields=["attempts"])
+
             error = "Invalid OTP. Please try again."
 
         else:
             try:
                 with transaction.atomic():
+
+                    # Mark OTP as verified.
                     otp_record.verified = True
                     otp_record.save(update_fields=["verified"])
 
+                    # Create the new user.
                     user = User.objects.create_user(
                         username=registration_data["username"],
                         email=registration_data["email"],
                         password=registration_data["password"],
                     )
 
+                # Clear registration data after successful creation.
                 request.session.pop("registration_data", None)
-                login(request, user)
+
+                # Explicitly select Django's standard authentication backend.
+                login(
+                    request,
+                    user,
+                    backend="django.contrib.auth.backends.ModelBackend",
+                )
 
                 return redirect("feed")
 
@@ -168,6 +143,10 @@ def verify_otp(request):
     )
 
 
+# ----------------------------------------------------------------------
+# NORMAL LOGIN
+# ----------------------------------------------------------------------
+
 def login_view(request):
     next_url = request.POST.get("next") or request.GET.get("next", "")
 
@@ -186,6 +165,9 @@ def login_view(request):
 
         if form.is_valid():
             user = form.get_user()
+
+            # AuthenticationForm authenticates through the configured
+            # authentication backend and assigns it to the user.
             login(request, user)
 
             if next_url and url_has_allowed_host_and_scheme(
@@ -210,16 +192,24 @@ def login_view(request):
     )
 
 
+# ----------------------------------------------------------------------
+# LOGOUT
+# ----------------------------------------------------------------------
+
 def logout_view(request):
     logout(request)
     return redirect("home")
 
 
+# ----------------------------------------------------------------------
+# USER ONBOARDING
+# ----------------------------------------------------------------------
+
 @login_required
 def onboarding_view(request):
     user = request.user
 
-    # Users who have already completed onboarding do not need it again.
+    # Already completed onboarding.
     if user.onboarding_completed:
         return redirect("feed")
 
@@ -236,8 +226,11 @@ def onboarding_view(request):
             instance=profile,
         )
 
+        cleaned_username = None
+
         try:
             username_field = User._meta.get_field("username")
+
             cleaned_username = username_field.clean(
                 submitted_username,
                 user,
@@ -246,6 +239,7 @@ def onboarding_view(request):
             if User.objects.filter(
                 username__iexact=cleaned_username
             ).exclude(pk=user.pk).exists():
+
                 username_error = "This username is already taken."
 
         except ValidationError as error:
@@ -254,8 +248,10 @@ def onboarding_view(request):
         if profile_form.is_valid() and not username_error:
             try:
                 with transaction.atomic():
+
                     user.username = cleaned_username
                     user.onboarding_completed = True
+
                     user.save(
                         update_fields=[
                             "username",
